@@ -6,7 +6,7 @@ namespace Domain.Entities.Enums
 {
     public enum SeatStatusEnum
     {
-        Booked,
-        Active
+        Booked = 1 ,
+        Active = 2
     }
 }
