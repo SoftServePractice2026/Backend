@@ -8,7 +8,7 @@ namespace Domain.Entities
 {
     public class SeatEntity:Entity
     {
-        public int HallId { get; set; }
+        public  Guid HallId { get; set; }
 
         public HallEntity? Hall { get; set; }
 
