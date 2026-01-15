@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Domain.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Domain.Entities
 {
-    public class ViewHistoryEntity
+    public class ViewHistoryEntity:Entity
     {
-        public Guid Id { get; set; }
-
         public Guid UserId { get; set; }
 
         public Guid MovieId {  get; set; }

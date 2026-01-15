@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Domain.Entities.Enums;
+using Domain.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Domain.Entities
 {
-    public class SeatEntity
+    public class SeatEntity:Entity
     {
-        public Guid Id { get; set; }
-
         public int HallId { get; set; }
 
         public HallEntity? Hall { get; set; }
@@ -20,7 +20,7 @@ namespace Domain.Entities
 
         public SeatTypeEnum SeatType { get; set; }
 
-        public bool IsActive { get; set; }
+        public SeatStatusEnum Status { get; set; }
 
 
     }

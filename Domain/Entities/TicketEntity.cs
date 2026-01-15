@@ -1,14 +1,13 @@
-﻿using System;
+﻿using Domain.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Reflection.Metadata;
 using System.Text;
 
 namespace Domain.Entities
 {
-    public class TicketEntity
+    public class TicketEntity:Entity
     {
-        public Guid Id { get; set; }
-
         public Guid UserId { get; set; }
 
         public Guid SeatId { get; set; }

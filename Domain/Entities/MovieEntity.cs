@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Domain.Entities.Enums;
+using Domain.Primitives;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
 namespace Domain.Entities
 {
-    public class MovieEntity
+    public class MovieEntity:Entity
     {
-        public Guid Id { get; set; }
-
         public string? Poster { get; set; }
 
         public string? Description { get; set; }
@@ -29,7 +29,7 @@ namespace Domain.Entities
 
         public DateTime CreatedAt { get; set; }
 
-        public ICollection<MovieCatalogActor> ActorsInMovies { get; set; }
+        public ICollection<MovieActorEntity> ActorsInMovies { get; set; }
 
         public ICollection<ViewHistoryEntity> MoviesViewed { get; set; }
 

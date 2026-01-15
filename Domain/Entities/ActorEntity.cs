@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Domain.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Domain.Entities
 {
-    public class ActorEntity
+    public class ActorEntity: Entity
     {
-        public Guid Id { get; set; }
-
         public string? FirstName { get; set; }
 
         public string? LastName { get; set; }
 
-        public ICollection<MovieCatalogActor> ActorsInMovies { get; set; }    
+        public ICollection<MovieActorEntity> ActorsInMovies { get; set; }    
     }
 }

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Domain.Entities
+namespace Domain.Entities.Enums
 {
-    internal class SeatStatusEnum
+    public enum SeatStatusEnum
     {
+        Booked,
+        Active
     }
 }
