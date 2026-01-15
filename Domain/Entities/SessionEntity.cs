@@ -21,7 +21,7 @@ namespace Domain.Entities
 
         public DateTime? EndTime { get; set;}
 
-        public StatusEnum Status { get; set; }
+        public SessionStatusEnum SessionStatus { get; set; }
 
         public ICollection<TicketEntity> Tickets { get; set; }
     }
