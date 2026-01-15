@@ -6,8 +6,8 @@ namespace Domain.Entities.Enums
 {
     public enum CategoryEnum
     {
-      Film,
-      Cartoon,
-      Anime
+      Film = 1,
+      Cartoon = 2,
+      Anime = 3
     }
 }
