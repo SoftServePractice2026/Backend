@@ -22,8 +22,6 @@ namespace Infrastructure.EntitiesConfiguration
             builder.Property(m => m.Title)
                 .HasColumnName("title")
                 .IsRequired();
-            builder.HasIndex(m => m.Title)
-                .IsUnique();
 
             
             builder.Property(m => m.Description)
