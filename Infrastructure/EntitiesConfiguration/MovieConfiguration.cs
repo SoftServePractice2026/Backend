@@ -45,11 +45,10 @@ namespace Infrastructure.EntitiesConfiguration
                 .HasColumnName("duration_min")
                 .IsRequired();
 
-            
-            builder.Property(m => m.Rating)
-                .HasColumnName("rating")
-                .IsRequired(false);
 
+            builder.Property(m => m.Rating)
+                .HasColumnName("rating");
+            
             
             builder.Property(m => m.RentalStartDate)
                 .HasColumnName("start_of_rental")

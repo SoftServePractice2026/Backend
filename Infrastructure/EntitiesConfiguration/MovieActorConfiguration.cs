@@ -16,6 +16,11 @@ namespace Infrastructure.EntitiesConfiguration
                 .HasColumnName("movie_actors_id");
             
             
+            builder.Property(ma => ma.MovieId)
+                .HasColumnName("movie_id")
+                .IsRequired();
+            
+            
             builder.Property(ma => ma.ActorId)
                 .HasColumnName("actor_id")
                 .IsRequired();
