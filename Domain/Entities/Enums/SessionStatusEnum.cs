@@ -4,10 +4,10 @@ using System.Text;
 
 namespace Domain.Entities.Enums
 {
-    public enum StatusEnum
+    public enum SessionStatusEnum
     {
-        Cancelled,
-        Finished,
-        Scheduled
+        Cancelled = 1,
+        Finished = 2,
+        Scheduled = 3
     }
 }
