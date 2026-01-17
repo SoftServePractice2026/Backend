@@ -16,7 +16,7 @@ namespace Domain.Entities
 
         public ICollection<GenreEntity> Genres { get; set; } = new List<GenreEntity>();
         public ICollection<MovieActorEntity> ActorsInMovies { get; set; } = new List<MovieActorEntity>();
-        public ICollection<ViewHistoryEntity> MoviesViewed { get; set; } = new List<ViewHistoryEntity>();
         public ICollection<SessionEntity> Sessions { get; set; } = new List<SessionEntity>();
+        public ICollection<FavoriteMovieEntity> FavoriteMovies { get; set; } = new List<FavoriteMovieEntity>();
     }
 }

@@ -10,7 +10,6 @@ namespace Domain.Entities
         public HallSizeEnum HallSize { get; set; }
 
         public ICollection<SessionEntity> Sessions { get; set; } = new List<SessionEntity>();
-
         public ICollection<SeatEntity> Seats { get; set; } = new List<SeatEntity>();
 
     }

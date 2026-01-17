@@ -20,7 +20,7 @@ namespace Infrastructure.EntitiesConfiguration
             
             builder.Property(a => a.LastName)
                 .HasColumnName("last_name")
-                .HasMaxLength(40).IsRequired();;
+                .HasMaxLength(40).IsRequired();
         }
     }
 }

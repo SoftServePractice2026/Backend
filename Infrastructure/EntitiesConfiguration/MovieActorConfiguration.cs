@@ -15,26 +15,25 @@ namespace Infrastructure.EntitiesConfiguration
             builder.Property(h => h.Id)
                 .HasColumnName("movie_actors_id");
             
-            
             builder.Property(ma => ma.MovieId)
                 .HasColumnName("movie_id")
                 .IsRequired();
-            
             
             builder.Property(ma => ma.ActorId)
                 .HasColumnName("actor_id")
                 .IsRequired();
 
-            
+            builder.Property(ma => ma.CharacterName)
+                .HasColumnName("character_name")
+                .HasMaxLength(50);
+
             builder.HasIndex(ma => new { ma.MovieId, ma.ActorId })
                 .IsUnique();
-
 
             builder.HasOne(ma => ma.Movie)
                 .WithMany(m => m.ActorsInMovies)
                 .HasForeignKey(ma => ma.MovieId)
                 .OnDelete(DeleteBehavior.Cascade);
-
 
             builder.HasOne(ma => ma.Actor)
                 .WithMany(a => a.ActorsInMovies)
