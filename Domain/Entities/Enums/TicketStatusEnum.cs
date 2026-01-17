@@ -2,9 +2,10 @@
 {
     public enum TicketStatusEnum
     {
-        Reserved = 1,
-        Paid = 2,
-        Cancelled = 3,
-        Expired = 4,
+        New = 1,
+        Reserved = 2,
+        Paid = 3,
+        Cancelled = 4,
+        Expired = 5,
     }
 }
