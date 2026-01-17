@@ -1,22 +1,15 @@
-﻿using Domain.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Domain.Entities.Enums;
+using Domain.Primitives;
 
 namespace Domain.Entities
 {
-    public class HallEntity:Entity
+    public class HallEntity : Entity
     {
         public string Name { get; set; } = null!;
-
-        public int Raws { get; set; }
-
-        public int SeatsPerRaw { get; set; }
-
         public bool IsActive { get; set; }
-        
+        public HallSizeEnum HallSize { get; set; }
+
         public ICollection<SessionEntity> Sessions { get; set; } = new List<SessionEntity>();
-        
         public ICollection<SeatEntity> Seats { get; set; } = new List<SeatEntity>();
 
     }

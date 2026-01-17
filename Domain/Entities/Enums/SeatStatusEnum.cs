@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Domain.Entities.Enums
+﻿namespace Domain.Entities.Enums
 {
     public enum SeatStatusEnum
     {
-        Booked = 1 ,
-        Active = 2
+        Broken = 1,
+        Locked = 2,
     }
 }

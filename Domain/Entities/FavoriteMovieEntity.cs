@@ -3,14 +3,14 @@ using Domain.Primitives;
 
 namespace Domain.Entities
 {
-    public class ViewHistoryEntity : Entity
+    public class FavoriteMovieEntity : Entity
     {
         public Guid UserId { get; set; }
         public IUser ApplicationUser { get; set; } = null!;
 
-        public DateTime ViewedAt { get; set; }
+        public Guid MovieId { get; set; }
+        public MovieEntity Movie { get; set; } = null!;
 
-        public Guid SessionId { get; set; }
-        public SessionEntity? Session { get; set; }
+        public DateTime AddedAt { get; set; }
     }
 }
