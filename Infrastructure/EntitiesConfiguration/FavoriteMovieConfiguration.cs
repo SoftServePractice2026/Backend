@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Infrastructure.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -32,7 +33,7 @@ namespace Infrastructure.EntitiesConfiguration
                 .HasForeignKey(f => f.MovieId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(f => f.ApplicationUser)
+            builder.HasOne(f => (ApplicationUser)f.ApplicationUser)
                 .WithMany(u => u.FavoriteMovies)
                 .HasForeignKey(f => f.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
