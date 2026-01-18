@@ -4,7 +4,7 @@ using Domain.Primitives;
 
 namespace Domain.Entities
 {
-    public class TicketEntity : Entity
+    public class TicketEntity : AuditableEntity
     {
         public Guid UserId { get; set; }
         public IUser ApplicationUser { get; set; } = null!;
@@ -20,6 +20,5 @@ namespace Domain.Entities
 
         public decimal Price { get; set; }
         public TicketStatusEnum TicketStatus { get; set; }
-        public DateTime? CreatedAt { get; set; }
     }
 }
