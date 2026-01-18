@@ -1,12 +1,19 @@
 using Application;
 using Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+services.AddControllers();
+services.AddOpenApi();
 
-builder.Services
+services.AddDbContext<CinemaDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(CinemaDbContext)));
+});
+
+services
     .AddApplication()
     .AddInfrastructure();
 

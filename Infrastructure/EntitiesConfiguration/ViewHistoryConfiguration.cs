@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Domain.Entities;
+using Infrastructure.Identity.Data;
 
 namespace Infrastructure.EntitiesConfiguration
 {
@@ -32,7 +33,7 @@ namespace Infrastructure.EntitiesConfiguration
                 .HasForeignKey(h => h.SessionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(h => h.ApplicationUser)
+            builder.HasOne(h => (ApplicationUser)h.ApplicationUser)
                 .WithMany(u => u.ViewHistories)
                 .HasForeignKey(h => h.UserId)
                 .OnDelete(DeleteBehavior.Cascade);

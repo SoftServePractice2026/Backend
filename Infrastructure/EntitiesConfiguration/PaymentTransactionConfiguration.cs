@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Infrastructure.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -43,7 +44,7 @@ namespace Infrastructure.EntitiesConfiguration
                 .HasColumnName("last_modified_at")
                 .HasColumnType("timestamp");
 
-            builder.HasOne(p => p.ApplicationUser)
+            builder.HasOne(p => (ApplicationUser)p.ApplicationUser)
                 .WithMany(u => u.PaymentTransactions)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
