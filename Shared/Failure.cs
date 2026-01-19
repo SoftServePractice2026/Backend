@@ -4,16 +4,16 @@ namespace Shared
 {
     public class Failure : IEnumerable<Error>
     {
-        private readonly List<Error> _errors;
+        public readonly List<Error> Errors;
 
         public Failure(IEnumerable<Error> errors)
         {
-            _errors = [.. errors];
+            Errors = [.. errors];
         }
 
         public IEnumerator<Error> GetEnumerator()
         {
-            return _errors.GetEnumerator();
+            return Errors.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -1,6 +1,6 @@
-﻿using FluentValidation;
+﻿using Application.Services;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-
 
 namespace Application;
 
@@ -10,7 +10,14 @@ public static class DependencyInjection
     {
         var currentAssembly = typeof(DependencyInjection).Assembly;
 
+        //Dependency all validators in current assembly
         services.AddValidatorsFromAssembly(currentAssembly);
+
+        //Dependency all mapping profiles in current assembly
+        services.AddAutoMapper(cfg => { }, currentAssembly);
+
+        //Dependency services
+        services.AddScoped<IHallService, HallService>();
 
         return services;
     }

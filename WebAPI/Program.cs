@@ -1,11 +1,17 @@
 using Application;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using WebAPI.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
-services.AddControllers();
+services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFailureFilter>();
+});
+
+
 services.AddOpenApi();
 
 services.AddDbContext<CinemaDbContext>(options =>
