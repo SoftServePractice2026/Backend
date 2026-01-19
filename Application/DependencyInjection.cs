@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Application.Validators.Halls;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +12,7 @@ public static class DependencyInjection
         var currentAssembly = typeof(DependencyInjection).Assembly;
 
         //Dependency all validators in current assembly
-        services.AddValidatorsFromAssembly(currentAssembly);
+        services.AddValidatorsFromAssemblyContaining<CreateHallDtoValidator>();
 
         //Dependency all mapping profiles in current assembly
         services.AddAutoMapper(cfg => { }, currentAssembly);

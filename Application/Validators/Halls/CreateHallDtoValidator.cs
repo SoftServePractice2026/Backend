@@ -8,14 +8,12 @@ namespace Application.Validators.Halls
         public CreateHallDtoValidator()
         {
             RuleFor(h => h.Name)
-                .NotEmpty()
-                .WithMessage("Hall name is required")
-                .WithErrorCode("name.empty");
+                .NotEmpty().WithMessage("Hall name is required").WithErrorCode("name.empty")
+                .MinimumLength(1)
+                .MaximumLength(10);
 
             RuleFor(h => h.HallSize)
-                .IsInEnum()
-                .WithMessage("Invalid hall size")
-                .WithErrorCode("hallSize.invalid");
+                .IsInEnum().WithMessage("Invalid hall size").WithErrorCode("hallSize.invalid");
         }
     }
 }
