@@ -32,9 +32,9 @@ namespace Application.Services
             {
                 await _repository.CreateHallAsync(hall);
             }
-            catch
+            catch (Exception ex)
             {
-                return Result<HallDetailsDto>.Fail(Error.Internal());
+                return Result<HallDetailsDto>.Fail(Error.Internal(message: ex.Message));
             }
 
             var resultDto = _mapper.Map<HallDetailsDto>(hall);

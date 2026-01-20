@@ -14,6 +14,8 @@ namespace Application.Mappers
                     IsActive = dto.IsActive,
                     HallSize = dto.HallSize 
                 });
+
+            CreateMap<HallEntity, HallDetailsDto>();
         }
     }
 }
