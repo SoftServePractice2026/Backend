@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Application.Validators.Halls
 {
-    public class CreateHallDtoValidator : AbstractValidator<CreateHallDto>
+    public class HallCreateDtoValidator : AbstractValidator<HallCreateDto>
     {
-        public CreateHallDtoValidator()
+        public HallCreateDtoValidator()
         {
             RuleFor(h => h.Name)
                 .NotEmpty().WithMessage("Hall name is required").WithErrorCode("name.empty")

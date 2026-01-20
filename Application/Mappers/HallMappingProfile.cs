@@ -8,14 +8,18 @@ namespace Application.Mappers
     {
         public HallMappingProfile()
         {
-            CreateMap<CreateHallDto, HallEntity>()
+            CreateMap<HallCreateDto, HallEntity>()
                 .ConstructUsing(dto => new HallEntity() { 
                     Name = dto.Name,
                     IsActive = dto.IsActive,
                     HallSize = dto.HallSize 
                 });
 
+            CreateMap<HallUpdateDto, HallEntity>()
+                .ForMember(x => x.Id, opt => opt.Ignore());
+
             CreateMap<HallEntity, HallDetailsDto>();
+            CreateMap<HallEntity, HallListItemDto>();
         }
     }
 }

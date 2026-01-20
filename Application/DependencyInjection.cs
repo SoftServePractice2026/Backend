@@ -12,7 +12,7 @@ public static class DependencyInjection
         var currentAssembly = typeof(DependencyInjection).Assembly;
 
         //Dependency all validators in current assembly
-        services.AddValidatorsFromAssemblyContaining<CreateHallDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<HallCreateDtoValidator>();
 
         //Dependency all mapping profiles in current assembly
         services.AddAutoMapper(cfg => { }, currentAssembly);

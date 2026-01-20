@@ -8,7 +8,18 @@ namespace Application.DTOs
         bool IsActive,
         HallSizeEnum HallSize);
 
-    public record CreateHallDto(
+    public record HallCreateDto(
+        string Name,
+        bool IsActive,
+        HallSizeEnum HallSize);
+
+    public record HallUpdateDto(
+        string Name,
+        bool IsActive,
+        HallSizeEnum HallSize);
+
+    public record HallListItemDto(
+        Guid Id,
         string Name,
         bool IsActive,
         HallSizeEnum HallSize);
