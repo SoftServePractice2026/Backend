@@ -4,6 +4,8 @@ using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+﻿using Domain.Interfaces;
+using Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure;
@@ -31,6 +33,9 @@ public static class DependencyInjection
 
         // services.Configure<JwtOptions>(configuration.GetSection());
         
+        //Dependency repositories
+        services.AddScoped<IHallRepository, HallRepository>();
+
         return services;
     }
 }

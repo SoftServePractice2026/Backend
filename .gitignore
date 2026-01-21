@@ -9,6 +9,18 @@ obj/
 [Oo]bj/
 **/Debug/
 **/Release/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Node.js build artifacts
+node_modules/
+package-lock.json
+
+appsettings.json
+appsettings.Development.json
+appsettings.Local.json
 
 # Rider / JetBrains
 .idea/
@@ -19,6 +31,8 @@ obj/
 .DS_Store?
 ._*
 
-# Settings (щоб не злітали локальні паролі)
 WebAPI/appsettings.json
 WebAPI/appsettings.Development.json
+# Docker
+.dockerignore
+/WebAPI/appsettings.json
