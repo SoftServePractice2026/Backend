@@ -20,6 +20,8 @@ public static class DependencyInjection
         //Dependency services
         services.AddScoped<IHallService, HallService>();
 
+        services.AddScoped<ITicketService, TicketService>();
+
         return services;
     }
 }
