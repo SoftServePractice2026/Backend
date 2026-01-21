@@ -30,7 +30,12 @@ namespace Infrastructure.EntitiesConfiguration
             builder.Property(t => t.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamp")
-                .IsRequired(false);
+                .HasDefaultValueSql("timezone('utc', now())")
+                .IsRequired();
+            
+            builder.Property(p => p.LastModifiedAt)
+                .HasColumnName("last_modified_at")
+                .HasColumnType("timestamp");
             
             builder.Property(t => t.Price)
                 .HasColumnName("price")

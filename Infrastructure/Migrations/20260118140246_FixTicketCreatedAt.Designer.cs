@@ -3,6 +3,7 @@ using System;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CinemaDbContext))]
-    partial class CinemaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260118140246_FixTicketCreatedAt")]
+    partial class FixTicketCreatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -337,14 +340,11 @@ namespace Infrastructure.Migrations
                         .HasColumnName("ticket_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("timezone('utc', now())");
+                        .HasColumnName("created_at");
 
                     b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("timestamp")
-                        .HasColumnName("last_modified_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("PaymentTransactionId")
                         .HasColumnType("uuid");

@@ -46,7 +46,7 @@ msbuild.wrn
 node_modules/
 package-lock.json
 
-
+appsettings.json
 appsettings.Development.json
 appsettings.Local.json
 
@@ -62,3 +62,4 @@ Thumbs.db
 
 # Docker
 .dockerignore
+/WebAPI/appsettings.json
