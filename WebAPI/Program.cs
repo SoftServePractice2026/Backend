@@ -8,14 +8,11 @@ var services = builder.Services;
 services.AddControllers();
 services.AddOpenApi();
 
-services.AddDbContext<CinemaDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(CinemaDbContext)));
-});
+
 
 services
     .AddApplication()
-    .AddInfrastructure();
+    .AddInfrastructure(services, builder.Configuration);
 
 var app = builder.Build();
 
