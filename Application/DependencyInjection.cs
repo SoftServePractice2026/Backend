@@ -21,6 +21,8 @@ public static class DependencyInjection
         services.AddScoped<IHallService, HallService>();
 
         services.AddScoped<ITicketService, TicketService>();
+        
+        services.AddScoped<IViewHistoryService, ViewHistoryService>();
 
         return services;
     }

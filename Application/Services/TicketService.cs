@@ -28,7 +28,6 @@ public class TicketService : ITicketService
 
         public async Task<Result<TicketDetailsDto>> CreateTicketAsync(TicketCreateDto dto)
         {
-            // Перетворюємо DTO у сутність бази даних
             var ticket = _mapper.Map<TicketEntity>(dto);
 
             try
@@ -77,8 +76,7 @@ public class TicketService : ITicketService
                 return Result<TicketDetailsDto>.Fail(
                     Failure.FromError(Error.NotFound("ticket.not.found", $"Ticket with id: {targetId} not found")));
             }
-
-            // Мапимо зміни з DTO в уже існуючу сутність
+            
             _mapper.Map(dto, ticket);
 
             await _repository.UpdateTicketAsync(ticket);

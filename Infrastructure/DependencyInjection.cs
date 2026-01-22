@@ -13,6 +13,8 @@ public static class DependencyInjection
         services.AddScoped<IHallRepository, HallRepository>();
 
         services.AddScoped<ITicketRepository, TicketRepository>();
+        
+        services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
 
         return services;
     }
