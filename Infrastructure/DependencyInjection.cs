@@ -14,6 +14,8 @@ public static class DependencyInjection
 
         services.AddScoped<IActorRepository, ActorRepository>();
 
+        services.AddScoped<IGenreRepository, GenreRepository>();
+
         return services;
     }
 }
