@@ -4,7 +4,25 @@ using System.Text;
 
 namespace Application.DTOs
 {
-    internal class ActorDtos
-    {
-    }
+    public record ActorDetailsDto(
+        Guid Id,
+        string Name,
+        string Surname
+        );
+
+    public record ActorCreateDto(
+        string Name,
+        string Surname
+        );
+
+    public record ActorUpdateDto(
+        string Name,
+        string Surname
+        );
+
+    public record ActorListItemDto(
+        Guid Id,
+        string Name,
+        string Surname
+        );
 }
