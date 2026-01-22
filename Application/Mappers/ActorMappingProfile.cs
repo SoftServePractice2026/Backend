@@ -14,9 +14,10 @@ namespace Application.Mappers
             CreateMap<ActorCreateDto, ActorEntity>()
                 .ConstructUsing(dto => new ActorEntity()
                 {
-                    FirstName = dto.Name,
-                    LastName = dto.Surname
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName
                 });
+
 
             CreateMap<ActorUpdateDto, ActorEntity>()
                 .ForMember(x => x.Id, opt => opt.Ignore());

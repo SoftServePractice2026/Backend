@@ -1,28 +1,30 @@
-﻿using System;
+﻿using Domain.Entities.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Application.DTOs
 {
     public record ActorDetailsDto(
-        Guid Id,
-        string Name,
-        string Surname
-        );
+           Guid Id,
+           string FirstName,
+           string LastName
+           );
+
 
     public record ActorCreateDto(
-        string Name,
-        string Surname
+        string FirstName,
+        string LastName
         );
 
     public record ActorUpdateDto(
-        string Name,
-        string Surname
+        string FirstName,
+        string LastName
         );
 
     public record ActorListItemDto(
         Guid Id,
-        string Name,
-        string Surname
+        string FirstName,
+        string LastName
         );
 }
