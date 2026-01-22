@@ -15,12 +15,10 @@ public static class DependencyInjection
 
         //Dependency all validators in current assembly
         services.AddValidatorsFromAssemblyContaining<HallCreateDtoValidator>();
-        services.AddValidatorsFromAssemblyContaining<ActorCreateDtoValidator>();
-        services.AddValidatorsFromAssemblyContaining<GenreCreateDtoValidator>();
+       
         //Dependency all mapping profiles in current assembly
         services.AddAutoMapper(cfg => { }, currentAssembly);
-        services.AddAutoMapper(acg => { }, currentAssembly);
-        services.AddAutoMapper(acg => { }, currentAssembly);
+
         //Dependency services
         services.AddScoped<IHallService, HallService>();
         services.AddScoped<IActorService, ActorService>();
