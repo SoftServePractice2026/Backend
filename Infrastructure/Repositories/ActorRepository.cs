@@ -32,19 +32,27 @@ namespace Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-        public Task<IReadOnlyList<ActorEntity>> FindActorsByFullNameAsync(string actorName, string actorSurname)
+        public async Task<IReadOnlyList<ActorEntity>> FindActorsByFullNameAsync(string fullName)
         {
-            throw new NotImplementedException();
+            return await _context.Actors
+           .AsNoTracking()
+           .Where(a => EF.Functions.ILike(a.FirstName + " " + a.LastName, fullName + "%"))
+           .ToListAsync();
         }
 
-        public Task<IReadOnlyList<ActorEntity>> FindActorsByNameAsync(string actorName)
+        public async Task<IReadOnlyList<ActorEntity>> FindActorsByNameAsync(string actorName)
         {
-            throw new NotImplementedException();
+            return await _context.Actors
+           .Where(a => EF.Functions.ILike(a.FirstName, actorName + "%"))
+           .ToListAsync();
         }
+      
 
-        public Task<IReadOnlyList<ActorEntity>> FindActorsBySurnameAsync(string actorSurname)
+        public async Task<IReadOnlyList<ActorEntity>> FindActorsBySurnameAsync(string actorSurname)
         {
-            throw new NotImplementedException();
+            return await _context.Actors
+           .Where(a => EF.Functions.ILike(a.LastName, actorSurname + "%"))
+           .ToListAsync();
         }
 
         public Task<ActorEntity?> GetActorByIdAsync(Guid actorId) => _context.Actors.FirstOrDefaultAsync(x => x.Id == actorId);

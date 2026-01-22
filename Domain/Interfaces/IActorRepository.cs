@@ -13,7 +13,7 @@ namespace Domain.Interfaces
         Task<ActorEntity?> GetActorByIdAsync(Guid actorId);
         Task<IReadOnlyList<ActorEntity>> FindActorsByNameAsync(string actorName);
         Task<IReadOnlyList<ActorEntity>> FindActorsBySurnameAsync(string actorSurname);
-        Task<IReadOnlyList<ActorEntity>> FindActorsByFullNameAsync(string actorName, string actorSurname);
+        Task<IReadOnlyList<ActorEntity>> FindActorsByFullNameAsync(string fullName);
         Task<IReadOnlyList<ActorEntity>> GetActorEntitiesAsync();
         Task SaveChangesAsync();
 

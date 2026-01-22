@@ -12,6 +12,8 @@ public static class DependencyInjection
         //Dependency repositories
         services.AddScoped<IHallRepository, HallRepository>();
 
+        services.AddScoped<IActorRepository, ActorRepository>();
+
         return services;
     }
 }
