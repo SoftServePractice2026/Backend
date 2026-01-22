@@ -1,4 +1,6 @@
 ﻿using Application.Services;
+using Application.Validators.Actors;
+using Application.Validators.Genres;
 using Application.Validators.Halls;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,13 +15,14 @@ public static class DependencyInjection
 
         //Dependency all validators in current assembly
         services.AddValidatorsFromAssemblyContaining<HallCreateDtoValidator>();
-
+       
         //Dependency all mapping profiles in current assembly
         services.AddAutoMapper(cfg => { }, currentAssembly);
 
         //Dependency services
         services.AddScoped<IHallService, HallService>();
-
+        services.AddScoped<IActorService, ActorService>();
+        services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<ITicketService, TicketService>();
 
         return services;
