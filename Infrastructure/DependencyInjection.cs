@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Application.Auth;
+using Application.Services.Movie.MovieRepository;
 using Infrastructure.Authentication;
 using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
@@ -69,6 +70,8 @@ public static class DependencyInjection
         
         //Dependency repositories
         services.AddScoped<IHallRepository, HallRepository>();
+        
+        services.AddScoped<IMovieRepository, MovieRepository>();
 
         return services;
     }

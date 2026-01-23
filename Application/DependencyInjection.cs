@@ -1,4 +1,7 @@
 ﻿using Application.Services;
+using Application.Services.Identity;
+using Application.Services.Identity.IdentityService;
+using Application.Services.Movie.MovieService;
 using Application.Validators.Halls;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +22,10 @@ public static class DependencyInjection
 
         //Dependency services
         services.AddScoped<IHallService, HallService>();
+
+        services.AddScoped<IIdentityService, IdentityService>();
+        
+        services.AddScoped<IMovieService, MovieService>();
 
         return services;
     }
