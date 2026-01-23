@@ -1,6 +1,8 @@
 using Application.Dtos.Identity;
 using Application.Services.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using WebAPI.ResponseExtensions;
 
 namespace WebAPI.Controllers;
 
@@ -21,7 +23,9 @@ public class IdentityControllers : ControllerBase
     {
         var result = await _identityService.RegisterAsync(request, cancellationToken);
         
-        return Ok(result);
+        return result.IsFailure
+            ? result.Error.ToResponse()
+            : Ok(result.Value);
     }
 
 
@@ -31,7 +35,18 @@ public class IdentityControllers : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _identityService.LoginAsync(request, cancellationToken);
-        
-        return Ok(result);
+
+        return result.IsFailure
+            ? result.Error.ToResponse()
+            : Ok(result.Value);
+    }
+
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await _identityService.LogoutAsync();
+
+        return Ok(new { message = "Logout successful" });
     }
 }
