@@ -24,6 +24,8 @@ public static class DependencyInjection
         services.AddScoped<IActorService, ActorService>();
         services.AddScoped<IGenreService, GenreService>();
         services.AddScoped<ITicketService, TicketService>();
+        
+        services.AddScoped<IViewHistoryService, ViewHistoryService>();
 
         return services;
     }

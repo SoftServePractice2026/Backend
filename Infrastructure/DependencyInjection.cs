@@ -14,6 +14,8 @@ public static class DependencyInjection
         services.AddScoped<IActorRepository, ActorRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        
+        services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
 
         return services;
     }
