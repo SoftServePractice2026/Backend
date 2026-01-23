@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CinemaDbContext))]
-    [Migration("20260118140246_FixTicketCreatedAt")]
-    partial class FixTicketCreatedAt
+    [Migration("20260122234812_Initial_Real_Complete")]
+    partial class Initial_Real_Complete
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -340,11 +340,14 @@ namespace Infrastructure.Migrations
                         .HasColumnName("ticket_id");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("timezone('utc', now())");
 
                     b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp")
+                        .HasColumnName("last_modified_at");
 
                     b.Property<Guid>("PaymentTransactionId")
                         .HasColumnType("uuid");
@@ -465,6 +468,12 @@ namespace Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");

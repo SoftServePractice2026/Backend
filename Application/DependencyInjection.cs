@@ -1,4 +1,7 @@
 ﻿using Application.Services;
+using Application.Services.Identity;
+using Application.Services.Identity.IdentityService;
+using Application.Services.Movie.MovieService;
 using Application.Validators.Actors;
 using Application.Validators.Genres;
 using Application.Validators.Halls;
@@ -26,6 +29,10 @@ public static class DependencyInjection
         services.AddScoped<ITicketService, TicketService>();
         
         services.AddScoped<IViewHistoryService, ViewHistoryService>();
+
+        services.AddScoped<IIdentityService, IdentityService>();
+        
+        services.AddScoped<IMovieService, MovieService>();
 
         return services;
     }

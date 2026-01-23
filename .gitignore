@@ -1,42 +1,14 @@
-*.swp
-*.*~
-project.lock.json
-*.pyc
-nupkg/
+# .NET Core
+**/bin/
+**/obj/
+bin/
+obj/
 
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-
-# Rider
-.idea/
-
-# Visual Studio
-.vs/
-
-# Fleet
-.fleet/
-
-# Code Rush
-.cr/
-
-# User-specific files
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-build/
-bld/
+# Debug/Release
 [Bb]in/
 [Oo]bj/
+**/Debug/
+**/Release/
 [Oo]ut/
 msbuild.log
 msbuild.err
@@ -50,16 +22,17 @@ appsettings.json
 appsettings.Development.json
 appsettings.Local.json
 
+# Rider / JetBrains
+.idea/
+*.sln.DotSettings.user
 
+# Mac OS
 .DS_Store
 .DS_Store?
 ._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-
+WebAPI/appsettings.json
+WebAPI/appsettings.Development.json
 # Docker
 .dockerignore
 /WebAPI/appsettings.json

@@ -15,15 +15,12 @@ services.AddFluentValidationAutoValidation();
 
 services.AddOpenApi();
 
-services.AddDbContext<CinemaDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(CinemaDbContext)));
-});
+
 
 //Add dependency from layers
 services
     .AddApplication()
-    .AddInfrastructure();
+    .AddInfrastructure(services, builder.Configuration);
 
 
 //Add swagger
@@ -55,7 +52,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 

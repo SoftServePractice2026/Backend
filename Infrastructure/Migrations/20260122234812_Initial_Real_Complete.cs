@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial_Real_Complete : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -47,6 +47,8 @@ namespace Infrastructure.Migrations
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RefreshToken = table.Column<string>(type: "text", nullable: true),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -409,7 +411,8 @@ namespace Infrastructure.Migrations
                     PaymentTransactionId = table.Column<Guid>(type: "uuid", nullable: false),
                     price = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
                     TicketStatus = table.Column<int>(type: "integer", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp", nullable: true)
+                    created_at = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "timezone('utc', now())"),
+                    last_modified_at = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
                 constraints: table =>
                 {
