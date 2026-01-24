@@ -5,6 +5,7 @@ using WebAPI.Mappers;
 
 namespace WebAPI.Controllers
 {
+    [Route("api/genre")]
     public class GenreController : BaseController
     {
         private readonly IGenreService _genreService;

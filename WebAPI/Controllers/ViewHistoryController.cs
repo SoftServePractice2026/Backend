@@ -5,6 +5,7 @@ using WebAPI.Mappers;
 
 namespace WebAPI.Controllers
 {
+    [Route("api/view-history")]
     public class ViewHistoryController : BaseController
     {
         private readonly IViewHistoryService _viewHistoryService;
