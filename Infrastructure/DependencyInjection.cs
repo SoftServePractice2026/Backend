@@ -19,9 +19,16 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services,
         IServiceCollection serviceCollection, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString(nameof(CinemaDbContext));
+
+        if(string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException($"Connection string {nameof(CinemaDbContext)} is missing in appsettings.json or environment variables.");
+        }
+
         services.AddDbContext<CinemaDbContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString(nameof(CinemaDbContext)));
+            options.UseNpgsql(connectionString);
         });
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>

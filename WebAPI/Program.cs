@@ -47,6 +47,17 @@ services.AddControllers(options =>
 
 var app = builder.Build();
 
+//Checking is runnig database
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
+
+    if (!await dbContext.Database.CanConnectAsync())
+    {
+        throw new InvalidOperationException("Cannot connect to database. Check connection string and database availability.");
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
