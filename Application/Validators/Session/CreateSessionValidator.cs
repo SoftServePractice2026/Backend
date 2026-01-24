@@ -1,0 +1,38 @@
+﻿using Application.DTOs;
+using FluentValidation;
+
+namespace Application.Validators.Session;
+
+public class CreateSessionValidator :  AbstractValidator<SessionDtos.SessionCreateDto>
+{
+    public CreateSessionValidator()
+    {
+        RuleFor(x => x.MovieId)
+            .NotEmpty().WithMessage("MovieId is required");
+
+        
+        RuleFor(x => x.HallId)
+            .NotEmpty().WithMessage("HallId is required");
+
+        
+        RuleFor(x => x.StartTime)
+            .NotEmpty().WithMessage("StartTime is required");
+
+        
+        RuleFor(x => x.EndTime)
+            .NotEmpty().WithMessage("EndTime is required");
+
+        
+        RuleFor(x => x)
+            .Must(x => x.StartTime < x.EndTime)
+            .WithMessage("StartTime must be less than EndTime");
+
+        
+        RuleFor(x => x.Price)
+            .GreaterThan(0).WithMessage("Price must be greater than 0");
+
+        
+        RuleFor(x => x.SessionStatus)
+            .IsInEnum().WithMessage("Invalid SessionStatus");
+    }
+}

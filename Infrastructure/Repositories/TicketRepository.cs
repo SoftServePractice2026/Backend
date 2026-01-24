@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Entities.Enums;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,5 +34,14 @@ namespace Infrastructure.Repositories
         }
 
         public Task SaveChangesAsync() => _context.SaveChangesAsync();
+        
+        public Task<List<TicketEntity>> GetTicketsBySessionIdAsync(Guid sessionId)
+            => _context.Tickets.Where(t => t.SessionId == sessionId).ToListAsync();
+        
+        
+        public Task<int> UpdatePriceForActiveTicketsBySessionIdAsync(Guid sessionId, decimal newPrice)
+            => _context.Tickets.Where(t => t.SessionId == sessionId && (t.TicketStatus == TicketStatusEnum.New || t.TicketStatus == TicketStatusEnum.Reserved))
+                .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.Price, newPrice));
+
     }
 }

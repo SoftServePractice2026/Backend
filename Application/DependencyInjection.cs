@@ -2,6 +2,10 @@
 using Application.Services.Identity;
 using Application.Services.Identity.IdentityService;
 using Application.Services.Movie.MovieService;
+using Application.Services.Session;
+using FluentValidation;
+using Application.Validators.Session;
+
 using Application.Validators.Actors;
 using Application.Validators.Genres;
 using Application.Validators.Halls;
@@ -18,7 +22,8 @@ public static class DependencyInjection
 
         //Dependency all validators in current assembly
         services.AddValidatorsFromAssemblyContaining<HallCreateDtoValidator>();
-       
+        services.AddValidatorsFromAssemblyContaining<CreateSessionValidator>();
+
         //Dependency all mapping profiles in current assembly
         services.AddAutoMapper(cfg => { }, currentAssembly);
 
@@ -33,7 +38,10 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         
         services.AddScoped<IMovieService, MovieService>();
-
+        
+        services.AddScoped<ISessionService, SessionService>();
+        
+        
         return services;
     }
 }
