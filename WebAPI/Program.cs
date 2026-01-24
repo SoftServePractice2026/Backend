@@ -5,6 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using WebAPI.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// add override appsettings.json from appsettings.Development.Local.json
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.Local.json",
+        optional: true,
+        reloadOnChange: true);
+
 var services = builder.Services;
 
 //Add dependency to custom filter
