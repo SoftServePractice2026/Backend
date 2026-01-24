@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Filters;
 
 namespace Domain.Interfaces
 {
@@ -10,6 +11,7 @@ namespace Domain.Interfaces
 
         Task<HallEntity?> GetHallByIdAsync(Guid hallId, CancellationToken cancellationToken);
         Task<HallEntity?> GetHallByNameAsync(string hallName, CancellationToken cancellationToken);
-        Task<List<HallEntity>> GetHallsAsync(CancellationToken cancellationToken);
+        Task<List<HallEntity>> GetFilteredHallsAsync(HallFilter hallFilter, CancellationToken cancellationToken);
+        Task<int> CountFilteredAsync(HallFilter hallFilter, CancellationToken cancellationToken);
     }
 }

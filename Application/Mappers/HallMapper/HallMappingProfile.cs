@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Filters;
 
 namespace Application.Mappers
 {
@@ -20,6 +21,9 @@ namespace Application.Mappers
 
             CreateMap<HallEntity, HallDetailsDto>();
             CreateMap<HallEntity, HallListItemDto>();
+
+            CreateMap<HallFilter, HallFilterDto>();
+            CreateMap<HallFilterDto, HallFilter>();
         }
     }
 }

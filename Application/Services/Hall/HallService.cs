@@ -2,6 +2,7 @@
 using Application.Services.Hall;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Filters;
 using Domain.Interfaces;
 using Shared;
 
@@ -50,18 +51,6 @@ namespace Application.Services
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<List<HallListItemDto>>> GetHallsAsync(CancellationToken cancellationToken)
-        {
-            var halls = await _repository.GetHallsAsync(cancellationToken);
-
-            if (!halls.Any())
-                return Result<List<HallListItemDto>>.Fail(Error.NotFound("halls.not.found", $"Halls is empty"));
-
-            var hallsDto = _mapper.Map<List<HallListItemDto>>(halls);
-
-            return Result<List<HallListItemDto>>.Success(hallsDto);
-        }
-
         public async Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var hall = await _repository.GetHallByIdAsync(id, cancellationToken);
@@ -105,6 +94,23 @@ namespace Application.Services
             var updatedHallDto = _mapper.Map<HallDetailsDto>(hall);
 
             return Result<HallDetailsDto>.Success(updatedHallDto);
+        }
+
+        public async Task<Result<(List<HallListItemDto> Halls, int TotalCount)>> GetFilteredHallsAsync(HallFilterDto hallFilterDto, CancellationToken cancellationToken)
+        {
+            var hallFilter = _mapper.Map<HallFilter>(hallFilterDto);
+
+            var halls = await _repository.GetFilteredHallsAsync(hallFilter, cancellationToken);
+
+            if (!halls.Any())
+                return Result<(List<HallListItemDto> Halls, int TotalCount)>.Fail(Error.NotFound("halls.not.found", $"Halls with filter no found"));
+
+            var totalCount = await _repository.CountFilteredAsync(hallFilter, cancellationToken);
+
+
+            var hallsDto = _mapper.Map<List<HallListItemDto>>(halls);
+
+            return Result<(List<HallListItemDto> Halls, int TotalCount)>.Success((hallsDto, totalCount));
         }
     }
 }

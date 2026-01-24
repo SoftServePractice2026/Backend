@@ -26,7 +26,7 @@ namespace WebAPI.Controllers
 
             return result.IsFailure
                 ? result.Failure!.ToResponse()
-                : CreatedAtAction(nameof(GetHallById), new { id = result.Value!.Id }, result.Value);
+                : CreatedAtAction(nameof(PostHall), new { id = result.Value!.Id }, result.Value);
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HallDetailsDto))]
@@ -53,6 +53,22 @@ namespace WebAPI.Controllers
                 : Ok(result.Value);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<HallListItemDto>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [HttpGet]
+        public async Task<IActionResult> GetHall([FromQuery] HallFilterDto hallFilterDto, CancellationToken cancellationToken)
+        {
+            var result = await _hallService.GetFilteredHallsAsync(hallFilterDto, cancellationToken);
+
+            Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
+            Response.Headers.Append("X-Page", hallFilterDto.Page.ToString());
+            Response.Headers.Append("X-PageSize", hallFilterDto.PageSize.ToString());
+
+            return result.IsFailure
+                ? result.Failure!.ToResponse()
+                : Ok(result.Value.Halls);
+        }
+
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HallDetailsDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
         [HttpGet("{id:guid}")]
@@ -70,18 +86,6 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> GetHallByName(string name, CancellationToken cancellationToken)
         {
             var result = await _hallService.GetHallByNameAsync(name, cancellationToken);
-            return result.IsFailure
-                ? result.Failure!.ToResponse()
-                : Ok(result.Value);
-        }
-
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HallDetailsDto))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
-        [HttpGet]
-        public async Task<IActionResult> GetAllHalls(CancellationToken cancellationToken)
-        {
-            var result = await _hallService.GetHallsAsync(cancellationToken);
-
             return result.IsFailure
                 ? result.Failure!.ToResponse()
                 : Ok(result.Value);

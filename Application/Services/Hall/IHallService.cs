@@ -10,6 +10,6 @@ namespace Application.Services.Hall
         Task<Result<bool>> DeleteHallAsync(Guid id, CancellationToken cancellationToken);
         Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<Result<HallDetailsDto>> GetHallByNameAsync(string name, CancellationToken cancellationToken);
-        Task<Result<List<HallListItemDto>>> GetHallsAsync(CancellationToken cancellationToken);
+        Task<Result<(List<HallListItemDto> Halls, int TotalCount)>> GetFilteredHallsAsync(HallFilterDto hallFilterDto, CancellationToken cancellationToken);
     }
 }

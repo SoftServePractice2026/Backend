@@ -23,4 +23,10 @@ namespace Application.DTOs
         string Name,
         bool IsActive,
         HallSizeEnum HallSize);
+
+    public record HallFilterDto(
+        bool? IsActive,
+        HallSizeEnum? HallSize,
+        int Page = 1,
+        int PageSize = 10);
 }
