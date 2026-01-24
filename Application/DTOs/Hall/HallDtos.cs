@@ -10,7 +10,6 @@ namespace Application.DTOs
 
     public record HallCreateDto(
         string Name,
-        bool IsActive,
         HallSizeEnum HallSize);
 
     public record HallUpdateDto(
