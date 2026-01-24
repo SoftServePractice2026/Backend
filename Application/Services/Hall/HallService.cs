@@ -23,26 +23,14 @@ namespace Application.Services
         public async Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto, CancellationToken cancellationToken)
         {
             var exist = await _repository.GetHallByNameAsync(dto.Name, cancellationToken);
+
             if (exist is not null)
-            {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist")));
-            }
+                return Result<HallDetailsDto>.Fail(Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist").ToFailure());
 
             var hall = _mapper.Map<HallEntity>(dto);
 
-            try
-            {
-                _repository.CreateHall(hall);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Internal(message: ex.Message)));
-            }
+            _repository.CreateHall(hall);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var resultDto = _mapper.Map<HallDetailsDto>(hall);
 
@@ -54,11 +42,7 @@ namespace Application.Services
             var hall = await _repository.GetHallByIdAsync(id, cancellationToken);
 
             if (hall is null)
-            {
-                return Result<bool>.Fail(
-                    Failure.FromError(
-                        Error.NotFound("hall.not.found", $"Hall with id: {id} not found")));
-            }
+                return Result<bool>.Fail(Error.NotFound("hall.not.found", $"Hall with id: {id} not found"));
 
             _repository.DeleteHall(hall);
             await _unitOfWork.SaveChangesAsync();
@@ -70,6 +54,9 @@ namespace Application.Services
         {
             var halls = await _repository.GetHallsAsync(cancellationToken);
 
+            if (!halls.Any())
+                return Result<List<HallListItemDto>>.Fail(Error.NotFound("halls.not.found", $"Halls is empty"));
+
             var hallsDto = _mapper.Map<List<HallListItemDto>>(halls);
 
             return Result<List<HallListItemDto>>.Success(hallsDto);
@@ -80,11 +67,7 @@ namespace Application.Services
             var hall = await _repository.GetHallByIdAsync(id, cancellationToken);
 
             if (hall is null)
-            {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.NotFound("hall.not.found", $"Hall with id: {id} not found")));
-            }
+                return Result<HallDetailsDto>.Fail(Error.NotFound("hall.not.found", $"Hall with id: {id} not found"));
 
             var hallDto = _mapper.Map<HallDetailsDto>(hall);
 
@@ -95,11 +78,7 @@ namespace Application.Services
         {
             var hall = await _repository.GetHallByNameAsync(name, cancellationToken);
             if (hall is null)
-            {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Conflict("hall.not.found", $"Hall with name: {name} not found")));
-            }
+                return Result<HallDetailsDto>.Fail(Error.Conflict("hall.not.found", $"Hall with name: {name} not found"));
 
             var hallDto = _mapper.Map<HallDetailsDto>(hall);
 
@@ -111,19 +90,12 @@ namespace Application.Services
             var hall = await _repository.GetHallByIdAsync(targetId, cancellationToken);
 
             if (hall is null)
-            {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.NotFound("hall.not.found", $"Hall with id: {targetId} not found")));
-            }
+                return Result<HallDetailsDto>.Fail(Error.NotFound("hall.not.found", $"Hall with id: {targetId} not found"));
 
             var nameExist = await _repository.GetHallByNameAsync(dto.Name, cancellationToken);
+
             if (nameExist is not null && nameExist.Id != targetId)
-            {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist")));
-            }
+                return Result<HallDetailsDto>.Fail(Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist"));
 
             _mapper.Map(dto, hall);
 
