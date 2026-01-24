@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Services.Hall;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -6,30 +7,22 @@ using Shared;
 
 namespace Application.Services
 {
-    public interface IHallService
-    {
-        Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto);
-        Task<Result<HallDetailsDto>> UpdateHallAsync(Guid targetId, HallUpdateDto dto);
-        Task<Result<bool>> DeleteHallAsync(Guid id);
-        Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id);
-        Task<Result<HallDetailsDto>> GetHallByNameAsync(string name);
-        Task<Result<List<HallListItemDto>>> GetHallAllAsync();
-    }
-
     public class HallService : IHallService
     {
         private readonly IHallRepository _repository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public HallService(IHallRepository repository, IMapper mapper)
+        public HallService(IHallRepository repository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto)
+        public async Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto, CancellationToken cancellationToken)
         {
-            var exist = await _repository.GetHallByNameAsync(dto.Name);
+            var exist = await _repository.GetHallByNameAsync(dto.Name, cancellationToken);
             if (exist is not null)
             {
                 return Result<HallDetailsDto>.Fail(
@@ -41,8 +34,8 @@ namespace Application.Services
 
             try
             {
-                await _repository.CreateHallAsync(hall);
-                await _repository.SaveChangesAsync();
+                _repository.CreateHall(hall);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -56,9 +49,9 @@ namespace Application.Services
             return Result<HallDetailsDto>.Success(resultDto);
         }
 
-        public async Task<Result<bool>> DeleteHallAsync(Guid id)
+        public async Task<Result<bool>> DeleteHallAsync(Guid id, CancellationToken cancellationToken)
         {
-            var hall = await _repository.GetHallByIdAsync(id);
+            var hall = await _repository.GetHallByIdAsync(id, cancellationToken);
 
             if (hall is null)
             {
@@ -67,24 +60,24 @@ namespace Application.Services
                         Error.NotFound("hall.not.found", $"Hall with id: {id} not found")));
             }
 
-            await _repository.DeleteHallAsync(hall);
-            await _repository.SaveChangesAsync();
+            _repository.DeleteHall(hall);
+            await _unitOfWork.SaveChangesAsync();
 
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<List<HallListItemDto>>> GetHallAllAsync()
+        public async Task<Result<List<HallListItemDto>>> GetHallsAsync(CancellationToken cancellationToken)
         {
-            var halls = await _repository.GetHallEntitiesAsync();
+            var halls = await _repository.GetHallsAsync(cancellationToken);
 
             var hallsDto = _mapper.Map<List<HallListItemDto>>(halls);
 
             return Result<List<HallListItemDto>>.Success(hallsDto);
         }
 
-        public async Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id)
+        public async Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            var hall = await _repository.GetHallByIdAsync(id);
+            var hall = await _repository.GetHallByIdAsync(id, cancellationToken);
 
             if (hall is null)
             {
@@ -98,9 +91,9 @@ namespace Application.Services
             return Result<HallDetailsDto>.Success(hallDto);
         }
 
-        public async Task<Result<HallDetailsDto>> GetHallByNameAsync(string name)
+        public async Task<Result<HallDetailsDto>> GetHallByNameAsync(string name, CancellationToken cancellationToken)
         {
-            var hall = await _repository.GetHallByNameAsync(name);
+            var hall = await _repository.GetHallByNameAsync(name, cancellationToken);
             if (hall is null)
             {
                 return Result<HallDetailsDto>.Fail(
@@ -113,9 +106,9 @@ namespace Application.Services
             return Result<HallDetailsDto>.Success(hallDto);
         }
 
-        public async Task<Result<HallDetailsDto>> UpdateHallAsync(Guid targetId, HallUpdateDto dto)
+        public async Task<Result<HallDetailsDto>> UpdateHallAsync(Guid targetId, HallUpdateDto dto, CancellationToken cancellationToken)
         {
-            var hall = await _repository.GetHallByIdAsync(targetId);
+            var hall = await _repository.GetHallByIdAsync(targetId, cancellationToken);
 
             if (hall is null)
             {
@@ -124,7 +117,7 @@ namespace Application.Services
                         Error.NotFound("hall.not.found", $"Hall with id: {targetId} not found")));
             }
 
-            var nameExist = await _repository.GetHallByNameAsync(dto.Name);
+            var nameExist = await _repository.GetHallByNameAsync(dto.Name, cancellationToken);
             if (nameExist is not null && nameExist.Id != targetId)
             {
                 return Result<HallDetailsDto>.Fail(
@@ -134,8 +127,8 @@ namespace Application.Services
 
             _mapper.Map(dto, hall);
 
-            await _repository.UpdateHallAsync(hall);
-            await _repository.SaveChangesAsync();
+            _repository.UpdateHall(hall);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var updatedHallDto = _mapper.Map<HallDetailsDto>(hall);
 

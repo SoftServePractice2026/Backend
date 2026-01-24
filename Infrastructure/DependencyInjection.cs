@@ -6,7 +6,7 @@ using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-﻿using Domain.Interfaces;
+using Domain.Interfaces;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,9 +32,9 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<CinemaDbContext>()
             .AddDefaultTokenProviders();
 
-        
+
         var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
-        
+
         services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -62,21 +62,20 @@ public static class DependencyInjection
                     }
                 };
             });
-        
-        
+
+
         services.AddScoped<IJwtProvider, JwtProvider>();
 
         // services.Configure<JwtOptions>(configuration.GetSection());
-        
+
         //Dependency repositories
         services.AddScoped<IHallRepository, HallRepository>();
-        
         services.AddScoped<IMovieRepository, MovieRepository>();
         services.AddScoped<IActorRepository, ActorRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
-        
         services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

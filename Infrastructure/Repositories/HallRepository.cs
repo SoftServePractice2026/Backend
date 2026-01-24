@@ -13,29 +13,17 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public Task DeleteHallAsync(HallEntity hallEntity)
-        {
-            _context.Halls.Remove(hallEntity);
-            return Task.CompletedTask;
-        }
+        public void CreateHall(HallEntity hallEntity) => _context.Halls.Add(hallEntity);
+        public void DeleteHall(HallEntity hallEntity) => _context.Halls.Remove(hallEntity);
+        public void UpdateHall(HallEntity hallEntity) => _context.Halls.Update(hallEntity);
 
-        public Task<HallEntity?> GetHallByIdAsync(Guid hallId) => _context.Halls.FirstOrDefaultAsync(x => x.Id == hallId);
+        public async Task<List<HallEntity>> GetHallsAsync(CancellationToken cancellationToken) => 
+            await _context.Halls.ToListAsync(cancellationToken);
 
-        public Task<HallEntity?> GetHallByNameAsync(string hallName) => _context.Halls.FirstOrDefaultAsync(x => x.Name == hallName);
+        public async Task<HallEntity?> GetHallByIdAsync(Guid hallId, CancellationToken cancellationToken) => 
+            await _context.Halls.FindAsync([hallId], cancellationToken);
 
-        public Task<List<HallEntity>> GetHallEntitiesAsync() => _context.Halls.ToListAsync();
-
-        public Task UpdateHallAsync(HallEntity hallEntity)
-        {
-            _context.Halls.Update(hallEntity);
-            return Task.CompletedTask;
-        }
-
-        public async Task CreateHallAsync(HallEntity hallEntity)
-        {
-            await _context.Halls.AddAsync(hallEntity);
-        }
-
-        public Task SaveChangesAsync() => _context.SaveChangesAsync();
+        public async Task<HallEntity?> GetHallByNameAsync(string hallName, CancellationToken cancellationToken) =>
+            await _context.Halls.FirstOrDefaultAsync(h => h.Name == hallName, cancellationToken);
     }
 }
