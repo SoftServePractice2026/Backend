@@ -56,18 +56,6 @@ namespace Domain.Entities
             DateTime end)
         {
 
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                throw new ArgumentException("Title cannot be empty", nameof(title));
-            }
-
-            
-            if (duration <= 0) throw new ArgumentException("Duration must be positive", nameof(duration));
-
-            if (end <= start)
-            {
-                throw new ArgumentException("End date must be after start date", nameof(end));
-            }
 
             var movie = new MovieEntity(
                 title,
