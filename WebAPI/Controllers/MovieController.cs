@@ -5,7 +5,7 @@ using WebAPI.ResponseExtensions;
 
 namespace WebAPI.Controllers;
 
-[Route("api/movie")]
+[Route("api/v1/movies")]
 public class MovieController : BaseController
 {
     private readonly IMovieService _movieService;

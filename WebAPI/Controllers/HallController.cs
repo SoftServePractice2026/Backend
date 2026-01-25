@@ -6,7 +6,7 @@ using WebAPI.ResponseExtensions;
 
 namespace WebAPI.Controllers
 {
-    [Route("api/hall")]
+    [Route("api/v1/halls")]
     public class HallController : BaseController
     {
         private readonly IHallService _hallService;

@@ -5,7 +5,7 @@ using WebAPI.Mappers;
 
 namespace WebAPI.Controllers
 {
-    [Route("api/ticket")]
+    [Route("api/v1/tickets")]
     public class TicketController : BaseController
     {
         private readonly ITicketService _ticketService;
