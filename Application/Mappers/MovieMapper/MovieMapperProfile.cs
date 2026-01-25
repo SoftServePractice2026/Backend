@@ -9,9 +9,18 @@ public class MovieMapperProfile : Profile
     public MovieMapperProfile()
     {
         CreateMap<MovieEntity, MovieDetailsDto>()
-
-            .ForMember(x => x.Genres, opt
-                => opt.MapFrom(src => src.Genres.Select(g => g.Name)));
+            .ConstructUsing(src => new MovieDetailsDto(
+                src.Id,
+                src.Title,
+                src.Description,
+                src.Poster ?? string.Empty,
+                src.AgeRating,
+                src.Rating ?? 0m,
+                src.RentalStartDate,
+                src.Genres.Select(g => g.Name).ToList()
+            ))
+            .ForAllMembers(opt => opt.Ignore());
+            
         
         CreateMap<UpdateMovieDto, MovieEntity>()
             .ForMember(x => x.Id, opt => opt.Ignore());

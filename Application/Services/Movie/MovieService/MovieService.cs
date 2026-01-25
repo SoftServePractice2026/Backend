@@ -44,13 +44,6 @@ public class MovieService : IMovieService
     
     public async Task<Result<MovieDetailsDto, Failure>> CreateMovieAsync(CreateMovieDto request, CancellationToken cancellationToken)
     {
-        var validationResult = await _createMovieValidator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToErrors();
-        }
-
 
         var movieEntity = MovieEntity.Create(
                 poster: request.Poster,
@@ -74,12 +67,6 @@ public class MovieService : IMovieService
 
     public async Task<Result<MovieDetailsDto, Failure>> UpdateMovieAsync(UpdateMovieDto request, CancellationToken cancellationToken)
     {
-        var validationResult = await _updateMovieValidator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToErrors();
-        }
         
         var movie = await _movieRepository.GetMovieByIdAsync(request.Id);
 
@@ -99,20 +86,16 @@ public class MovieService : IMovieService
 
     public async Task<Result<bool, Failure>> DeleteMovieAsync(DeleteMovieDto request, CancellationToken cancellationToken)
     {
-        var validationResult = await _deleteMovieValidator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToErrors();
-        }
-        
         var movie = await _movieRepository.GetMovieByIdAsync(request.Id);
 
+        if (movie == null)
+        {
+            return Failure.FromError(Error.Validation("MovieNotFound", "Movie not found"));
+        }
+        
         var result = await _movieRepository.DeleteMovieAsync(movie);
         
         _logger.LogInformation($"Movie with id {movie.Id} was deleted.");
-        
-        var detailsDto = _mapper.Map<MovieDetailsDto>(result);
         
         return Result.Success<bool, Failure>(true);
 
@@ -120,12 +103,6 @@ public class MovieService : IMovieService
 
     public async Task<Result<MovieDetailsDto, Failure>> GetMovieByIdAsync(GetMovieByIdDto request, CancellationToken cancellationToken)
     {
-        var validationResult = await _getMovieByIdValidator.ValidateAsync(request, cancellationToken);
-        
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToErrors();
-        }
         
         var movie = await _movieRepository.GetMovieByIdAsync(request.Id);
         

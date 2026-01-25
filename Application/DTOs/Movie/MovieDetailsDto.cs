@@ -7,5 +7,5 @@ public record MovieDetailsDto(
     string Poster,
     int AgeRating,
     decimal Rating,
-    DateTime ReleaseDate,
+    DateTime RentalStartDate,
     List<string> Genres);

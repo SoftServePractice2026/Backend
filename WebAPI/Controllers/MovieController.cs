@@ -15,7 +15,7 @@ public class MovieController : ControllerBase
         _movieService = movieService;
     }
 
-    [HttpPost("create")]
+    [HttpPost]
     public async Task<IActionResult> CreateMovie(
         [FromBody] CreateMovieDto request,
         CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class MovieController : ControllerBase
     }
 
 
-    [HttpGet("get")]
+    [HttpGet]
     public async Task<IActionResult> GetMovie(
         [FromQuery] GetMovieByIdDto request,
         CancellationToken cancellationToken)
@@ -39,7 +39,7 @@ public class MovieController : ControllerBase
     }
 
 
-    [HttpPost("update")]
+    [HttpPut]
     public async Task<IActionResult> UpdateMovie(
         [FromBody] UpdateMovieDto request,
         CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ public class MovieController : ControllerBase
             : Ok(result.Value);
     }
 
-    [HttpPost("delete")]
+    [HttpDelete]
     public async Task<IActionResult> DeleteMovie(
         [FromBody] DeleteMovieDto request,
         CancellationToken cancellationToken)

@@ -33,7 +33,14 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         
-        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection("Jwt"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        
+        
+        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>() 
+                         ?? throw new InvalidOperationException("JWT configuration is missing.");
         
         services.AddAuthentication(options =>
             {
@@ -66,8 +73,6 @@ public static class DependencyInjection
         
         services.AddScoped<IJwtProvider, JwtProvider>();
 
-        // services.Configure<JwtOptions>(configuration.GetSection());
-        
         //Dependency repositories
         services.AddScoped<IHallRepository, HallRepository>();
         
