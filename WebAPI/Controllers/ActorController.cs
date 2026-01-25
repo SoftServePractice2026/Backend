@@ -5,6 +5,7 @@ using WebAPI.Mappers;
 
 namespace WebAPI.Controllers
 {
+    [Route("api/v1/actors")]
     public class ActorController : BaseController
     {
         private readonly IActorService _actorService;

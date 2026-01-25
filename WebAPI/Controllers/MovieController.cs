@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using WebAPI.ResponseExtensions;
 
 namespace WebAPI.Controllers;
-[ApiController]
-[Route("api/[controller]")]
-public class MovieController : ControllerBase
+
+[Route("api/v1/movies")]
+public class MovieController : BaseController
 {
     private readonly IMovieService _movieService;
 
