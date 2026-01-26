@@ -1,8 +1,10 @@
 ﻿using Application.Services;
 using Application.Services.Hall;
 using Application.Services.Identity;
+using Application.Services.ViewHistory;
 using Application.Services.Identity.IdentityService;
 using Application.Services.Movie.MovieService;
+using Application.Services.Ticket;
 using Application.Validators.Halls;
 using Domain.Interfaces;
 using FluentValidation;
