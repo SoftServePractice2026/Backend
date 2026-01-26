@@ -29,7 +29,7 @@ namespace Application.DTOs.Actor
         );
 
     public record ActorFilterDto(
-       string SearchTerm,
+       string? SearchTerm,
        Guid? MovieId,
        int Page = 1,
        int PageSize = 10);
