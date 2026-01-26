@@ -73,7 +73,7 @@ namespace Application.Services.Actor
             return Result<ActorDetailsDto>.Success(actorDto);
         }
 
-        public async Task<Result<(List<ActorListItemDto> Actors, int TotalCount)>> GetFilteredHallsAsync(ActorFilterDto actorFilterDto, CancellationToken cancellationToken)
+        public async Task<Result<(List<ActorListItemDto> Actors, int TotalCount)>> GetFilteredActorsAsync(ActorFilterDto actorFilterDto, CancellationToken cancellationToken)
         {
             var actorFilter = _mapper.Map<ActorFilter>(actorFilterDto);
 

@@ -16,6 +16,6 @@ namespace Application.Services.Actor
         Task<Result<ActorDetailsDto>> UpdateActorAsync(Guid targetId, ActorUpdateDto dto, CancellationToken cancellationToken);
         Task<Result<bool>> DeleteActorAsync(Guid id, CancellationToken cancellationToken);
         Task<Result<ActorDetailsDto>> GetActorByIdAsync(Guid id, CancellationToken cancellationToken);
-        Task<Result<(List<ActorListItemDto> Actors, int TotalCount)>> GetFilteredHallsAsync(ActorFilterDto actorFilterDto, CancellationToken cancellationToken);
+        Task<Result<(List<ActorListItemDto> Actors, int TotalCount)>> GetFilteredActorsAsync(ActorFilterDto actorFilterDto, CancellationToken cancellationToken);
     }
 }
