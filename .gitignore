@@ -4,6 +4,10 @@
 bin/
 obj/
 
+# Visual studio
+.vs/
+WebAPI/WebAPI.csproj.user
+
 # Debug/Release
 [Bb]in/
 [Oo]bj/
@@ -18,10 +22,6 @@ msbuild.wrn
 node_modules/
 package-lock.json
 
-appsettings.json
-appsettings.Development.json
-appsettings.Local.json
-
 # Rider / JetBrains
 .idea/
 *.sln.DotSettings.user
@@ -31,8 +31,8 @@ appsettings.Local.json
 .DS_Store?
 ._*
 
-WebAPI/appsettings.json
-WebAPI/appsettings.Development.json
 # Docker
 .dockerignore
-/WebAPI/appsettings.json
+
+# appsettings
+/WebAPI/appsettings.Development.Local.json

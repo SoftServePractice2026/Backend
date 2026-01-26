@@ -13,5 +13,9 @@ public interface IMovieService
     Task<Result<bool, Failure>> DeleteMovieAsync(DeleteMovieDto request, CancellationToken cancellationToken);
     
     Task<Result<MovieDetailsDto, Failure>> GetMovieByIdAsync(GetMovieByIdDto request, CancellationToken cancellationToken);
+
+    Task<Result<(List<MovieListItemDto> Movies, int TotalCount), Failure>> GetFilteredMoviesAsync(
+        MovieFilterDto movieFilterDto, 
+        CancellationToken cancellationToken);
     
 }

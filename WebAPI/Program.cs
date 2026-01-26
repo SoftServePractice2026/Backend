@@ -5,6 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using WebAPI.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// add override appsettings.json from appsettings.Development.Local.json
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.Local.json",
+        optional: true,
+        reloadOnChange: true);
+
 var services = builder.Services;
 
 //Add dependency to custom filter
@@ -37,6 +46,17 @@ services.AddControllers(options =>
 });
 
 var app = builder.Build();
+
+//Checking is runnig database
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
+
+    if (!await dbContext.Database.CanConnectAsync())
+    {
+        throw new InvalidOperationException("Cannot connect to database. Check connection string and database availability.");
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

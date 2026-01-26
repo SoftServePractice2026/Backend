@@ -1,6 +1,7 @@
 using Application.Dtos.Movie;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Filters;
 
 namespace Application.Mappers.MovieMapper;
 
@@ -25,5 +26,16 @@ public class MovieMapperProfile : Profile
         CreateMap<UpdateMovieDto, MovieEntity>()
             .ForMember(x => x.Id, opt => opt.Ignore());
 
+
+        CreateMap<MovieEntity, MovieListItemDto>()
+            .ConstructUsing(src => new MovieListItemDto(
+                src.Id,
+                src.Title,
+                src.Genres.Select(g => g.Id).FirstOrDefault()
+                ));
+        
+        CreateMap<MovieFilter, MovieFilterDto>();
+        CreateMap<MovieFilterDto, MovieFilter>();
+        
     }
 }

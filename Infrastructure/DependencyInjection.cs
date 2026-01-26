@@ -6,7 +6,7 @@ using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-﻿using Domain.Interfaces;
+using Domain.Interfaces;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,9 +19,16 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services,
         IServiceCollection serviceCollection, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString(nameof(CinemaDbContext));
+
+        if(string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException($"Connection string {nameof(CinemaDbContext)} is missing in appsettings.json or environment variables.");
+        }
+
         services.AddDbContext<CinemaDbContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString(nameof(CinemaDbContext)));
+            options.UseNpgsql(connectionString);
         });
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
@@ -34,14 +41,14 @@ public static class DependencyInjection
 
         
         services.AddOptions<JwtOptions>()
-            .Bind(configuration.GetSection("Jwt"))
+            .Bind(configuration.GetSection("JwtOptions"))
             .ValidateDataAnnotations()
             .ValidateOnStart();
         
         
-        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>() 
+        var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>() 
                          ?? throw new InvalidOperationException("JWT configuration is missing.");
-        
+
         services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -69,19 +76,19 @@ public static class DependencyInjection
                     }
                 };
             });
-        
-        
+
+
         services.AddScoped<IJwtProvider, JwtProvider>();
 
+        
         //Dependency repositories
         services.AddScoped<IHallRepository, HallRepository>();
-        
         services.AddScoped<IMovieRepository, MovieRepository>();
         services.AddScoped<IActorRepository, ActorRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
-        
         services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

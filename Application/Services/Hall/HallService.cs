@@ -1,96 +1,77 @@
 ﻿using Application.DTOs;
+using Application.Services.Hall;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Filters;
 using Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using Shared;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Application.Services
 {
-    public interface IHallService
-    {
-        Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto);
-        Task<Result<HallDetailsDto>> UpdateHallAsync(Guid targetId, HallUpdateDto dto);
-        Task<Result<bool>> DeleteHallAsync(Guid id);
-        Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id);
-        Task<Result<HallDetailsDto>> GetHallByNameAsync(string name);
-        Task<Result<List<HallListItemDto>>> GetHallAllAsync();
-    }
-
     public class HallService : IHallService
     {
         private readonly IHallRepository _repository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<HallService> _logger;
 
-        public HallService(IHallRepository repository, IMapper mapper)
+        public HallService(IHallRepository repository, IMapper mapper, IUnitOfWork unitOfWork, ILogger<HallService> logger)
         {
             _repository = repository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
-        public async Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto)
+        public async Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto, CancellationToken cancellationToken)
         {
-            var exist = await _repository.GetHallByNameAsync(dto.Name);
+            var exist = await _repository.GetHallByNameAsync(dto.Name, cancellationToken);
+
             if (exist is not null)
             {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist")));
+                var existErorr = Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist");
+                _logger.LogWarning("Create hall conflict. HallName={HallName}, Code = {Code}", dto.Name, existErorr.Code);
+                return Result<HallDetailsDto>.Fail(existErorr);
             }
 
             var hall = _mapper.Map<HallEntity>(dto);
 
-            try
-            {
-                await _repository.CreateHallAsync(hall);
-                await _repository.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Internal(message: ex.Message)));
-            }
+            _repository.CreateHall(hall);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var resultDto = _mapper.Map<HallDetailsDto>(hall);
 
             return Result<HallDetailsDto>.Success(resultDto);
         }
 
-        public async Task<Result<bool>> DeleteHallAsync(Guid id)
+        public async Task<Result<bool>> DeleteHallAsync(Guid id, CancellationToken cancellationToken)
         {
-            var hall = await _repository.GetHallByIdAsync(id);
+            var hall = await _repository.GetHallByIdAsync(id, cancellationToken);
 
             if (hall is null)
             {
-                return Result<bool>.Fail(
-                    Failure.FromError(
-                        Error.NotFound("hall.not.found", $"Hall with id: {id} not found")));
+                var hallErorr = Error.NotFound("hall.not.found", $"Hall with id: {id} not found");
+                _logger.LogWarning("Delete hall not found. HallId={HallId}, Code = {Code}", id, hallErorr.Code);
+                return Result<bool>.Fail(hallErorr);
             }
 
-            await _repository.DeleteHallAsync(hall);
-            await _repository.SaveChangesAsync();
+            _repository.DeleteHall(hall);
+            await _unitOfWork.SaveChangesAsync();
 
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<List<HallListItemDto>>> GetHallAllAsync()
+        public async Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            var halls = await _repository.GetHallEntitiesAsync();
-
-            var hallsDto = _mapper.Map<List<HallListItemDto>>(halls);
-
-            return Result<List<HallListItemDto>>.Success(hallsDto);
-        }
-
-        public async Task<Result<HallDetailsDto>> GetHallByIdAsync(Guid id)
-        {
-            var hall = await _repository.GetHallByIdAsync(id);
+            var hall = await _repository.GetHallByIdAsync(id, cancellationToken);
 
             if (hall is null)
             {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.NotFound("hall.not.found", $"Hall with id: {id} not found")));
+                var hallErorr = Error.NotFound("hall.not.found", $"Hall with id: {id} not found");
+                _logger.LogWarning("Get hall by id not found. HallId={HallId}, Code = {Code}", id, hallErorr.Code);
+                return Result<HallDetailsDto>.Fail(hallErorr);
             }
 
             var hallDto = _mapper.Map<HallDetailsDto>(hall);
@@ -98,14 +79,15 @@ namespace Application.Services
             return Result<HallDetailsDto>.Success(hallDto);
         }
 
-        public async Task<Result<HallDetailsDto>> GetHallByNameAsync(string name)
+        public async Task<Result<HallDetailsDto>> GetHallByNameAsync(string name, CancellationToken cancellationToken)
         {
-            var hall = await _repository.GetHallByNameAsync(name);
+            var hall = await _repository.GetHallByNameAsync(name, cancellationToken);
+
             if (hall is null)
             {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Conflict("hall.not.found", $"Hall with name: {name} not found")));
+                var hallErorr = Error.NotFound("hall.not.found", $"Hall with name: {name} not found");
+                _logger.LogWarning("Get hall by name not found. HallName={HallName}, Code = {Code}", name, hallErorr.Code);
+                return Result<HallDetailsDto>.Fail(hallErorr);
             }
 
             var hallDto = _mapper.Map<HallDetailsDto>(hall);
@@ -113,33 +95,56 @@ namespace Application.Services
             return Result<HallDetailsDto>.Success(hallDto);
         }
 
-        public async Task<Result<HallDetailsDto>> UpdateHallAsync(Guid targetId, HallUpdateDto dto)
+        public async Task<Result<HallDetailsDto>> UpdateHallAsync(Guid targetId, HallUpdateDto dto, CancellationToken cancellationToken)
         {
-            var hall = await _repository.GetHallByIdAsync(targetId);
+            var hall = await _repository.GetHallByIdAsync(targetId, cancellationToken);
 
             if (hall is null)
             {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.NotFound("hall.not.found", $"Hall with id: {targetId} not found")));
+                var hallErorr = Error.NotFound("hall.not.found", $"Hall with id: {targetId} not found");
+                _logger.LogWarning("Update hall not found. HallId={HallId}, Code = {Code}", targetId, hallErorr.Code);
+                return Result<HallDetailsDto>.Fail(hallErorr);
             }
 
-            var nameExist = await _repository.GetHallByNameAsync(dto.Name);
+            var nameExist = await _repository.GetHallByNameAsync(dto.Name, cancellationToken);
+
             if (nameExist is not null && nameExist.Id != targetId)
             {
-                return Result<HallDetailsDto>.Fail(
-                    Failure.FromError(
-                        Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist")));
+                var nameExistErorr = Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist");
+                _logger.LogWarning("Update hall exist. HallName={HallName}, Code = {Code}", dto.Name, nameExistErorr.Code);
+                return Result<HallDetailsDto>.Fail(nameExistErorr);
             }
 
             _mapper.Map(dto, hall);
 
-            await _repository.UpdateHallAsync(hall);
-            await _repository.SaveChangesAsync();
+            _repository.UpdateHall(hall);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var updatedHallDto = _mapper.Map<HallDetailsDto>(hall);
 
             return Result<HallDetailsDto>.Success(updatedHallDto);
+        }
+
+        public async Task<Result<(List<HallListItemDto> Halls, int TotalCount)>> GetFilteredHallsAsync(HallFilterDto hallFilterDto, CancellationToken cancellationToken)
+        {
+            var hallFilter = _mapper.Map<HallFilter>(hallFilterDto);
+
+            var halls = await _repository.GetFilteredHallsAsync(hallFilter, cancellationToken);
+
+            if (!halls.Any())
+            {
+                var hallsErorr = Error.NotFound("halls.not.found", $"Halls with filter no found");
+                _logger.LogWarning("Get filtered halls not found. IsActive={IsActive}, HallSize={HallSize}, Code={Code}",
+                    hallFilter.IsActive, hallFilter.HallSize, hallsErorr.Code);
+                return Result<(List<HallListItemDto> Halls, int TotalCount)>.Fail(hallsErorr);
+            }
+
+            var totalCount = await _repository.CountFilteredAsync(hallFilter, cancellationToken);
+
+
+            var hallsDto = _mapper.Map<List<HallListItemDto>>(halls);
+
+            return Result<(List<HallListItemDto> Halls, int TotalCount)>.Success((hallsDto, totalCount));
         }
     }
 }
