@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+﻿using Application.DTOs.Actor;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Mappers;
