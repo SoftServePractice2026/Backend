@@ -1,9 +1,9 @@
-﻿using Application.DTOs;
-using Domain.Entities;
+﻿using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using AutoMapper;
+using Application.DTOs.Genre;
 
 namespace Application.Mappers
 {
