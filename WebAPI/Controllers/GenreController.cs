@@ -81,7 +81,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<GenreListItemDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
         [HttpGet]
-        public async Task<IActionResult> GetGenre([FromQuery] GenreListItemDto genreListDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetGenre(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Request started: get all genres");
 
