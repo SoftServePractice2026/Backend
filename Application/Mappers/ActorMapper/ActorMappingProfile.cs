@@ -17,7 +17,7 @@ namespace Application.Mappers.ActorMapper
                 .ForMember(x => x.Id, opt => opt.Ignore());
 
 
-            CreateMap<HallUpdateDto, HallEntity>()
+            CreateMap<ActorUpdateDto, ActorEntity>()
                  .ForMember(x => x.Id, opt => opt.Ignore());
 
 

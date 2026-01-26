@@ -61,7 +61,7 @@ namespace WebAPI.Controllers
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
-        [ProducesResponseType(StatusCodes.Status204NoContent, Type = typeof(Failure))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteActor(Guid id, CancellationToken cancellationToken)
         {
