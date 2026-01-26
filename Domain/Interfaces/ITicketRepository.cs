@@ -9,6 +9,8 @@ namespace Domain.Interfaces
         Task UpdateTicketAsync(TicketEntity ticketEntity);
         Task<TicketEntity?> GetTicketByIdAsync(Guid ticketId);
         Task<List<TicketEntity>> GetTicketEntitiesAsync();
+        Task<List<TicketEntity>> GetTicketsBySessionIdAsync(Guid sessionId);
+        Task<int> UpdatePriceForActiveTicketsBySessionIdAsync(Guid sessionId, decimal newPrice);
         Task SaveChangesAsync();
     }
 }

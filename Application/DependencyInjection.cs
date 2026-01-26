@@ -3,6 +3,7 @@ using Application.Services.Hall;
 using Application.Services.Identity;
 using Application.Services.Identity.IdentityService;
 using Application.Services.Movie.MovieService;
+using Application.Services.Session;
 using Application.Validators.Halls;
 using Domain.Interfaces;
 using FluentValidation;
@@ -30,7 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IViewHistoryService, ViewHistoryService>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IMovieService, MovieService>();
-
+        services.AddScoped<ISessionService, SessionService>();
         return services;
     }
 }
