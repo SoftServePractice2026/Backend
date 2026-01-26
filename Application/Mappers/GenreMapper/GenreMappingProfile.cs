@@ -1,21 +1,20 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs;
+using Application.DTOs.Genre;
+using AutoMapper;
+using Domain.Entities;
+using Domain.Filters;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using AutoMapper;
-using Application.DTOs.Genre;
 
-namespace Application.Mappers
+namespace Application.Mappers.GenreMapper
 {
     public class GenreMappingProfile : Profile
     {
         public GenreMappingProfile()
         {
             CreateMap<GenreCreateDto, GenreEntity>()
-                .ConstructUsing(dto => new GenreEntity()
-                {
-                    Name = dto.Name
-                });
+                .ForMember(x => x.Id, opt => opt.Ignore());
 
             CreateMap<GenreUpdateDto, GenreEntity>()
                 .ForMember(x => x.Id, opt => opt.Ignore());

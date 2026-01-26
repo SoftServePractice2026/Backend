@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Application.Services.Genre;
 using Application.Services.Hall;
 using Application.Services.Identity;
 using Application.Services.Identity.IdentityService;

@@ -1,5 +1,5 @@
 ﻿using Application.DTOs.Genre;
-using Application.Services;
+using Application.Services.Genre;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.Mappers;
 
