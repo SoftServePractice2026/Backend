@@ -9,7 +9,6 @@ public class SessionMappingProfile : Profile
     {
         CreateMap<SessionCreateDto, SessionEntity>()
             .ForMember(x => x.Id, opt => opt.Ignore());
-
         
         CreateMap<SessionUpdateDto, SessionEntity>()
             .ForMember(d => d.Id, opt => opt.Ignore())
@@ -38,17 +37,16 @@ public class SessionMappingProfile : Profile
 
         
         
-        CreateMap<SessionEntity, SessionCardDto>()
-            .ConstructUsing(s => new SessionCardDto(
+        CreateMap<SessionEntity, SessionListItemDto>()
+            .ConstructUsing(s => new SessionListItemDto(
                 s.Id,
                 s.Movie == null ? string.Empty : s.Movie.Title,
                 s.MovieId,
                 s.Hall == null ? string.Empty : s.Hall.Name,
                 s.HallId,
                 s.StartTime,
-                s.SessionStatus,
-                (s.Tickets == null || !s.Tickets.Any()) ? 0m : s.Tickets.First().Price,
-                Array.Empty<SeatInSessionDto>()
-            ));
+                s.EndTime,
+                s.SessionStatus
+                ));
     }
 }
