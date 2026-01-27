@@ -8,4 +8,5 @@ public record MovieDetailsDto(
     int AgeRating,
     decimal Rating,
     DateTime RentalStartDate,
+    List<string> Actors,
     List<string> Genres);

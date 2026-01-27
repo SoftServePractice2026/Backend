@@ -37,31 +37,27 @@ public class MovieService : IMovieService
     
     public async Task<Result<MovieDetailsDto, Failure>> CreateMovieAsync(CreateMovieDto request, CancellationToken cancellationToken)
     {
+        var existingMovie = await _movieRepository.GetMovieByNameAsync(request.Title, cancellationToken);
 
-        var movieEntity = MovieEntity.Create(
-                poster: request.Poster,
-                title: request.Title,
-                description: request.Description,
-                ageRating: request.AgeRating,
-                language: request.Language,
-                duration: request.Duration,
-                start: request.RentalStartDate,
-                end: request.RentalEndDate
-            );
-
-        if (movieEntity is null)
+        if (existingMovie is not null)
         {
-            return Failure.FromError(Error.Validation("MovieCreationError", "Movie creation error"));
+            return Failure.FromError(Error.Conflict("Movie.Exist", $"Movie with title: {request.Title} already exist"));
+        }
+
+        var movie = _mapper.Map<MovieEntity>(request);
+        
+        _movieRepository.AddMovie(movie);
+
+        if (request.GenreIds != null && request.GenreIds.Any())
+        {
+            _movieRepository.AddGenresToMovie(movie, request.GenreIds);
         }
         
-        
-        _movieRepository.AddMovie(movieEntity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         
-        _logger.LogInformation($"Movie with id {movieEntity.Id} was created.");
+        _logger.LogInformation($"Movie with id {movie.Id} was created.");
         
-        var detailsDto = _mapper.Map<MovieDetailsDto>(movieEntity);
-        
+        var detailsDto = _mapper.Map<MovieDetailsDto>(movie);
         return Result.Success<MovieDetailsDto, Failure>(detailsDto);
     }
 
@@ -71,6 +67,8 @@ public class MovieService : IMovieService
 
         if (movie is null)
         {
+            _logger.LogWarning($"Movie with id {request.Id} was not found.");
+            
             return Failure.FromError(Error.NotFound("MovieNotFound", "Movie not found"));
         }
         
@@ -92,6 +90,8 @@ public class MovieService : IMovieService
 
         if (movie == null)
         {
+            _logger.LogWarning($"Movie with id {request.Id} was not found.");
+            
             return Failure.FromError(Error.NotFound("MovieNotFound", "Movie not found"));
         }
         
@@ -110,6 +110,8 @@ public class MovieService : IMovieService
         
         if (movie is null)
         {
+            _logger.LogWarning($"Movie with id {request.Id} was not found.");
+            
             return Failure.FromError(Error.NotFound("MovieNotFound", "Movie not found"));
         }
 
@@ -133,5 +135,93 @@ public class MovieService : IMovieService
         
         
         return Result.Success<(List<MovieListItemDto>, int), Failure>((moviesDto, totalCount));
+    }
+
+    public async Task<Result<MovieDetailsDto, Failure>> AddGenresToMovieAsync(AddGenresToMovieDto request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Add genres to movie.");
+        
+        var movie = await _movieRepository.GetMovieByIdAsync(request.MovieId, cancellationToken);
+
+        if (movie is null)
+        {
+            _logger.LogWarning($"Movie with id {request.MovieId} was not found.");
+            return Failure.FromError(Error.NotFound("MovieNotFound", "Movie not found"));
+        }
+        
+        _movieRepository.AddGenresToMovie(movie, request.GenreIds);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation($"Genres were added to movie with id {movie.Id}.");
+        
+        var detailsDto = _mapper.Map<MovieDetailsDto>(movie);
+        
+        return Result.Success<MovieDetailsDto, Failure>(detailsDto);
+    }
+
+    public async Task<Result<MovieDetailsDto, Failure>> AddActorsToMovieAsync(AddActorsToMovieDto request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Add actors to movie");
+        
+        var movie = await _movieRepository.GetMovieByIdAsync(request.MovieId, cancellationToken);
+
+        if (movie is null)
+        {
+            _logger.LogWarning($"Movie with id {request.MovieId} was not found.");
+            return Failure.FromError(Error.NotFound("MovieNotFound", "Movie not found"));
+        }
+        _movieRepository.AddActorsToMovie(movie, request.ActorIds);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        
+        var updatedMovie = await _movieRepository.GetMovieByIdAsync(movie.Id, cancellationToken);
+        
+        _logger.LogInformation($"Actors were added to movie with id {movie.Id}.");
+        
+        var detailsDto = _mapper.Map<MovieDetailsDto>(updatedMovie);
+        
+        return Result.Success<MovieDetailsDto, Failure>(detailsDto);
+    }
+
+    public async Task<Result<bool, Failure>> DeleteGenresFromMovieAsync(DeleteGenresFromMovieDto request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Delete genres from movie.");
+        
+        var movie = await _movieRepository.GetMovieByIdAsync(request.MovieId, cancellationToken);
+
+        if (movie is null)
+        {
+            _logger.LogWarning($"Movie with id {request.MovieId} was not found.");
+            return Failure.FromError(Error.NotFound("MovieNotFound", "Movie not found"));
+        }
+        
+        _movieRepository.DeleteGenresFromMovie(movie, request.GenreIds);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation($"Genres were deleted from movie with id {request.MovieId}.");
+        
+        
+        return Result.Success<bool, Failure>(true);
+    }
+
+    public async Task<Result<bool, Failure>> DeleteActorsFromMovieAsync(DeleteActorsFromMovieDto request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Delete actors from movie.");
+        
+        var movie = await _movieRepository.GetMovieByIdAsync(request.MovieId, cancellationToken);
+        
+        if (movie is null)
+        {
+            _logger.LogWarning($"Movie with id {request.MovieId} was not found.");
+            return Failure.FromError(Error.NotFound("MovieNotFound", "Movie not found"));
+        }
+        
+        _movieRepository.DeleteActorsFromMovie(movie, request.ActorIds);
+        
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation($"Actors were deleted from movie with id {request.MovieId}.");
+        
+        return Result.Success<bool, Failure>(true);
     }
 }

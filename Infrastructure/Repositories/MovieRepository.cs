@@ -22,12 +22,75 @@ public class MovieRepository : IMovieRepository
     public void UpdateMovie(MovieEntity movieEntity) => _dbContext.Movies.Update(movieEntity);
     public void DeleteMovie(MovieEntity movieEntity) => _dbContext.Movies.Remove(movieEntity);
     
+    
+    
+    
+    public void AddActorsToMovie(MovieEntity movieEntity, List<Guid> actorsIds)
+    {
+        var newActorLinks =
+            actorsIds
+                .Where(id => movieEntity.ActorsInMovies.All(am => am.ActorId != id))
+                .Select(a => new MovieActorEntity
+            {
+                MovieId = movieEntity.Id, 
+                ActorId = a
+            })
+            .ToList();
+
+        if (newActorLinks.Any())
+        {
+            _dbContext.MovieActors.AddRange(newActorLinks);
+        }
+    }
+
+    public void AddGenresToMovie(MovieEntity movieEntity, List<Guid> genresIds)
+    {
+        var newGenres = genresIds
+            .Where(id => movieEntity.Genres.All(mg => mg.Id != id))
+            .ToList();
+
+        foreach (var id in newGenres)
+        {
+            var genreStub = new GenreEntity { Id = id };
+            
+            _dbContext.Genres.Attach(genreStub);
+            
+            movieEntity.Genres.Add(genreStub);
+        }
+    }
+    
+    
+    
+    
+
+    public void DeleteActorsFromMovie(MovieEntity movieEntity, List<Guid> actorsIds)
+    {
+        var actorsToRemove = movieEntity.ActorsInMovies
+            .Where(a => actorsIds.Contains(a.ActorId))
+            .ToList();
+        
+        _dbContext.MovieActors.RemoveRange(actorsToRemove);
+    }
+
+    public void DeleteGenresFromMovie(MovieEntity movieEntity, List<Guid> genresIds)
+    {
+        var toRemove = movieEntity.Genres
+            .Where(g => genresIds.Contains(g.Id))
+            .ToList();
+
+        foreach (var genre in toRemove)
+        {
+            movieEntity.Genres.Remove(genre);
+        }
+    }
+
     public async Task<MovieEntity?> GetMovieByIdAsync(Guid movieId, CancellationToken cancellationToken)
     {
         return await _dbContext.Movies
             .Include(m => m.Genres)
             .Include(m => m.ActorsInMovies)
-            .FirstOrDefaultAsync(a => a.Id == movieId);
+            .ThenInclude(am => am.Actor)
+            .FirstOrDefaultAsync(a => a.Id == movieId, cancellationToken);
     }
 
     public async Task<MovieEntity?> GetMovieByNameAsync(string movieName, CancellationToken cancellationToken)
@@ -46,9 +109,9 @@ public class MovieRepository : IMovieRepository
             query = query.Where(m => m.Title.Contains(movieFilter.Title));
         }
 
-        if (movieFilter.GenreId.HasValue)
+        if (movieFilter.GenreIds != null && movieFilter.GenreIds.Any())
         {
-            query = query.Where(m => m.Genres.Any(g => g.Id == movieFilter.GenreId.Value));
+            query = query.Where(m => m.Genres.Any(g=> movieFilter.GenreIds.Contains(g.Id)));
         }
 
         if (movieFilter.MinAgeRating.HasValue)
@@ -70,9 +133,10 @@ public class MovieRepository : IMovieRepository
             query = query.Where(m => m.Title.Contains(movieFilter.Title));
         }
 
-        if (movieFilter.GenreId.HasValue)
+      
+        if (movieFilter.GenreIds != null && movieFilter.GenreIds.Any())
         {
-            query = query.Where(m => m.Genres.Any(g => g.Id == movieFilter.GenreId.Value));
+            query = query.Where(m => m.Genres.Any(g=> movieFilter.GenreIds.Contains(g.Id)));
         }
 
         if (movieFilter.MinAgeRating.HasValue)

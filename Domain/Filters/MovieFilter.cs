@@ -4,7 +4,7 @@ public class MovieFilter
 {
     public string? Title { get; init; }
     
-    public Guid? GenreId { get; init; }
+    public List<Guid>? GenreIds { get; init; }
     
     public int? MinAgeRating { get; init; }
     
