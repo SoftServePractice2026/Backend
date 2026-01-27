@@ -1,4 +1,7 @@
 using Domain.Entities.Enums;
+using Application.DTOs.Common;
+using Application.Interfaces;
+using Shared.Common;
 
 namespace Application.DTOs
 {
@@ -26,7 +29,7 @@ namespace Application.DTOs
     public record ViewHistoryFilterDto(
         Guid? UserId,
         Guid? SessionId,
-        int Page = 1,
-        int PageSize = 10);
+        String? OrderBy,
+        SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable;
 }
 

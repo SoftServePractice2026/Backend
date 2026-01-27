@@ -92,7 +92,7 @@ namespace WebAPI.Controllers
             }
             
             Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-            Response.Headers.Append("X-Page", ticketFilterDto.Page.ToString());
+            Response.Headers.Append("X-Page", ticketFilterDto.PageNumber.ToString());
             Response.Headers.Append("X-PageSize", ticketFilterDto.PageSize.ToString());
 
             _logger.LogInformation("Request ended: get filtered tickets");

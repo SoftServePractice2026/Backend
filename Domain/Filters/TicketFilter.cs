@@ -1,13 +1,19 @@
 using Domain.Entities.Enums;
+using Shared.Common;
 
 namespace Domain.Filters
 {
     public class TicketFilter
     {
-        public Guid? UserId { get; set; }
-        public TicketStatusEnum? TicketStatus { get; set; }
-        public int Page { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
+        public Guid? UserId { get; init; }
+        public TicketStatusEnum? TicketStatus { get; init; }
+        public int PageNumber { get; init; }
+        public int PageSize { get; init; }
+        
+        public string? OrderBy { get; init; }
+        public SortDirection SortDirection { get; init; }
+        
+        
         
     } 
 }

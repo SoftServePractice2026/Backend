@@ -92,7 +92,7 @@ namespace WebAPI.Controllers
             }
             
             Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-            Response.Headers.Append("X-Page", filterDto.Page.ToString());
+            Response.Headers.Append("X-Page", filterDto.PageNumber.ToString());
             Response.Headers.Append("X-PageSize", filterDto.PageSize.ToString());
 
             _logger.LogInformation("Request ended: get filtered view history");

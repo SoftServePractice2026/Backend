@@ -1,6 +1,8 @@
 using Domain.Entities;
+using Domain.Entities.Extensions;
 using Domain.Filters;
 using Domain.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -63,7 +65,12 @@ namespace Infrastructure.Repositories
             if (ticketFilter.TicketStatus.HasValue)
                 query = query.Where(t => t.TicketStatus == ticketFilter.TicketStatus.Value);
             
-            var skip = (ticketFilter.Page - 1) * ticketFilter.PageSize;
+            query = query.ApplyOrderBy(
+                ticketFilter.OrderBy,
+                ticketFilter.SortDirection,
+                TicketOrederByMap.Map);
+            
+            var skip = (ticketFilter.PageNumber - 1) * ticketFilter.PageSize;
             query = query.Skip(skip).Take(ticketFilter.PageSize);
             
             try
@@ -76,6 +83,9 @@ namespace Infrastructure.Repositories
                 throw;
             }
         }
+        
+        
+        
         
         public async Task<int> CountFilteredAsync(TicketFilter ticketFilter, CancellationToken cancellationToken)
         {
