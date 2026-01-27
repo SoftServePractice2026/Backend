@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Enums;
+using Shared.Common;
 
 namespace Domain.Filters
 {
@@ -7,7 +8,10 @@ namespace Domain.Filters
         public bool? IsActive { get; init; }
         public HallSizeEnum? HallSize { get; init; }
 
-        public int Page { get; init; } = 1;
-        public int PageSize { get; init; } = 10;
+        public int PageNumber { get; init; }
+        public int PageSize { get; init; }
+
+        public string? OrderBy { get; init; }
+        public SortDirection SortDirection { get; init; }
     }
 }
