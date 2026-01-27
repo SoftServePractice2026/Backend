@@ -37,22 +37,26 @@ public class SessionController : BaseController
     }
     
     
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<SessionCardDto>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<SessionListItemDto>))]
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromQuery] SessionFilterDto filter, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Request started: get sessions");
-        var result = await _sessionService.GetSessionAllAsync(cancellationToken);
-        
+        _logger.LogInformation("Request started: get filtered sessions");
+        var result = await _sessionService.GetFilteredSessionsAsync(filter, cancellationToken);
+
         if (result.IsFailure)
             return result.Failure!.ToResponse();
 
-        _logger.LogInformation("Request ended: get sessions");
-        return Ok(result.Value);
+        Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
+        Response.Headers.Append("X-Page", filter.PageNumber.ToString());
+        Response.Headers.Append("X-PageSize", filter.PageSize.ToString());
+
+        _logger.LogInformation("Request ended: get filtered sessions");
+        return Ok(result.Value.Sessions);
     }
     
     
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SessionCardDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SessionListItemDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
@@ -68,7 +72,7 @@ public class SessionController : BaseController
     }
 
     
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SessionCardDto))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SessionListItemDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
     [HttpPut("{id:guid}")]
@@ -95,4 +99,5 @@ public class SessionController : BaseController
         _logger.LogInformation("Request ended: delete session. SessionId={SessionId}", id);
         return NoContent();
     }
+
 }

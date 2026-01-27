@@ -13,11 +13,6 @@ public class UpdateAllSessionValidator : AbstractValidator<SessionUpdateDto>
             .Must(x => x.StartTime < x.EndTime)
             .When(x => x.StartTime.HasValue && x.EndTime.HasValue)
             .WithMessage("StartTime must be less than EndTime");
-
-        
-        RuleFor(x => x.Price)
-            .GreaterThan(0).WithMessage("Price must be greater than 0");
-
         
         RuleFor(x => x.SessionStatus)
             .IsInEnum().WithMessage("Invalid SessionStatus");

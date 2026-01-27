@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Domain.Entities;
-using Domain.Entities.Enums;
 using Shared;
 using Application.DTOs;
+using Domain.Filters;
 using Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -30,13 +30,8 @@ public class SessionService : ISessionService
         _logger = logger;
     }
     
-    
-    private SessionCardDto BuildCard(SessionEntity session, decimal price) =>
-        _mapper.Map<SessionCardDto>(session) with
-        {
-            Price = price,
-            Seats = new List<SeatInSessionDto>()
-        };
+    private SessionListItemDto BuildCard(SessionEntity session) =>
+        _mapper.Map<SessionListItemDto>(session);
     
     
     public async Task<Result<Guid>> CreateSessionAsync(SessionCreateDto dto, CancellationToken cancellationToken)
@@ -50,7 +45,6 @@ public class SessionService : ISessionService
             );
         }
         var session = _mapper.Map<SessionEntity>(dto);
-
         
         try
         {
@@ -68,25 +62,23 @@ public class SessionService : ISessionService
     }
     
     
-    
-    public async Task<Result<List<SessionCardDto>>> GetSessionAllAsync(CancellationToken cancellationToken)
+    public async Task<Result<List<SessionListItemDto>>> GetSessionAllAsync(CancellationToken cancellationToken)
     {
         try
         {
             var sessions = await _sessionRepository.GetSessionEntitiesAsync(cancellationToken);
-            var result = _mapper.Map<List<SessionCardDto>>(sessions);
-            return Result<List<SessionCardDto>>.Success(result);
+            var result = _mapper.Map<List<SessionListItemDto>>(sessions);
+            return Result<List<SessionListItemDto>>.Success(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Get sessions list failed.");
-            return Result<List<SessionCardDto>>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
+            return Result<List<SessionListItemDto>>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
         }
     }
     
     
-    
-    public async Task<Result<SessionCardDto>> GetSessionByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Result<SessionListItemDto>> GetSessionByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         try
         {
@@ -95,47 +87,45 @@ public class SessionService : ISessionService
             {
                 var err = Error.NotFound("session.not.found", $"Session with id: {id} not found");
                 _logger.LogWarning("Get session by id not found. SessionId={SessionId}, Code={Code}", id, err.Code);
-                return Result<SessionCardDto>.Fail(Failure.FromError(err));
+                return Result<SessionListItemDto>.Fail(Failure.FromError(err));
             }
-            return Result<SessionCardDto>.Success(_mapper.Map<SessionCardDto>(session));
+            return Result<SessionListItemDto>.Success(_mapper.Map<SessionListItemDto>(session));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Get session by id failed. SessionId={SessionId}", id);
-            return Result<SessionCardDto>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
+            return Result<SessionListItemDto>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
         }
     }
     
 
-    public async Task<Result<SessionCardDto>> UpdateSessionAsync(Guid targetId, SessionUpdateDto dto, CancellationToken cancellationToken)
-    {
+    public async Task<Result<SessionListItemDto>> UpdateSessionAsync(
+        Guid targetId,
+        SessionUpdateDto dto,
+        CancellationToken cancellationToken) {
         var session = await _sessionRepository.GetSessionByIdAsync(targetId, cancellationToken);
         if (session is null)
         {
             var err = Error.NotFound("session.not.found", $"Session with id: {targetId} not found");
             _logger.LogWarning("Update session not found. SessionId={SessionId}, Code={Code}", targetId, err.Code);
-            return Result<SessionCardDto>.Fail(Failure.FromError(err));
+            return Result<SessionListItemDto>.Fail(Failure.FromError(err));
         }
-
-        try{
-        _mapper.Map(dto, session);
-        if (dto.Price.HasValue)
+        try
         {
-            await _ticketRepository.UpdatePriceForActiveTicketsBySessionIdAsync(targetId, dto.Price.Value);
-        }
-        _sessionRepository.UpdateSession(session);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        var tickets = await _ticketRepository.GetTicketsBySessionIdAsync(targetId);
-        var price = dto.Price ?? tickets.FirstOrDefault()?.Price ?? 0m;
+            _mapper.Map(dto, session);
 
-        return Result<SessionCardDto>.Success(BuildCard(session, price));
+            _sessionRepository.UpdateSession(session);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result<SessionListItemDto>.Success(BuildCard(session));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Update session failed. SessionId={SessionId}", targetId);
-            return Result<SessionCardDto>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
+            return Result<SessionListItemDto>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
         }
     }
+    
     
     public async Task DeleteSessionAsync(Guid id, CancellationToken cancellationToken)
     {
@@ -147,7 +137,6 @@ public class SessionService : ISessionService
                 _logger.LogInformation("Delete session: already absent. SessionId={SessionId}", id);
                 return;
             }
-
             _sessionRepository.DeleteSession(session);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Session deleted. SessionId={SessionId}", id);
@@ -157,5 +146,25 @@ public class SessionService : ISessionService
             _logger.LogError(ex, "Delete session failed. SessionId={SessionId}", id);
             throw;
         }
+    }
+    
+
+    public async Task<Result<SessionFilterResultDto>> GetFilteredSessionsAsync(SessionFilterDto dto, CancellationToken ct)
+    {
+        var filter = new SessionFilter(
+            dto.MovieId,
+            dto.HallId,
+            dto.Status,
+            dto.From,
+            dto.To,
+            dto.MovieTitle,
+            dto.PageNumber ?? 1,
+            dto.PageSize ?? 10
+        );
+        
+        var sessions = await _sessionRepository.GetFilteredSessionsAsync(filter, ct);
+        var total = await _sessionRepository.CountFilteredAsync(filter, ct);
+        var cards = sessions.Select(BuildCard).ToList();
+        return Result<SessionFilterResultDto>.Success(new SessionFilterResultDto(cards, total));
     }
 }

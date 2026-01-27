@@ -1,11 +1,12 @@
-﻿namespace Infrastructure.Repositories;
-
-using Domain.Entities;
+﻿using Domain.Entities;
+using Domain.Filters;
 using Domain.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 
+namespace Infrastructure.Repositories;
 public class SessionRepository : ISessionRepository
 {
     private readonly CinemaDbContext _context;
@@ -40,6 +41,7 @@ public class SessionRepository : ISessionRepository
         }
     }
     
+    
     public async Task<List<SessionEntity>> GetSessionEntitiesAsync(CancellationToken cancellationToken)
     {
         try
@@ -48,7 +50,7 @@ public class SessionRepository : ISessionRepository
                 .AsNoTracking()
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
-                .Include(s => s.Tickets) // якщо з них дістаєш Price / Seats
+                .Include(s => s.Tickets)
                 .ToListAsync(cancellationToken);
         }
         catch (Exception ex)
@@ -67,5 +69,49 @@ public class SessionRepository : ISessionRepository
                 end > s.StartTime,
             ct);
     }
+    
+    
+    
+    public async Task<List<SessionEntity>> GetFilteredSessionsAsync(SessionFilter filter, CancellationToken cancellationToken)
+    {
+        var query = _context.Sessions
+            .Include(s => s.Movie)
+            .Include(s => s.Hall)
+            .AsQueryable();
+
+        query = query.ApplyFilters(filter);
+
+        var skip = (filter.PageNumber - 1) * filter.PageSize;
+        query = query.Skip(skip).Take(filter.PageSize);
+        try
+        {
+            return await query.ToListAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Database error while filtering sessions");
+            throw;
+        }
+    }
+
+    
+    public async Task<int> CountFilteredAsync(SessionFilter filter, CancellationToken cancellationToken)
+    {
+        var query = _context.Sessions
+            .Include(s => s.Movie)
+            .AsQueryable();
+
+        query = query.ApplyFilters(filter);
+        try
+        {
+            return await query.CountAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Database error while count filtered sessions");
+            throw;
+        }
+    }
+
 }
 
