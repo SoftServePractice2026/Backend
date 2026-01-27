@@ -1,8 +1,8 @@
 # .NET Core
 **/bin/
 **/obj/
-[Bb]in/
-[Oo]bj/
+bin/
+obj/
 
 # Visual studio
 .vs/
