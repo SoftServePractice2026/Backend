@@ -3,6 +3,7 @@ using FluentValidation.AspNetCore;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Filters;
+using WebAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,7 @@ services.AddControllers(options =>
 
 var app = builder.Build();
 
+
 //Checking is runnig database
 using (var scope = app.Services.CreateScope())
 {
@@ -57,6 +59,8 @@ using (var scope = app.Services.CreateScope())
         throw new InvalidOperationException("Cannot connect to database. Check connection string and database availability.");
     }
 }
+
+app.UseMiddleware<LoggingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

@@ -18,14 +18,12 @@ namespace Application.Services.Actor
         private readonly IActorRepository _repository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<ActorService> _logger;
 
-        public ActorService(IActorRepository repository, IMapper mapper, IUnitOfWork unitOfWork, ILogger<ActorService> logger)
+        public ActorService(IActorRepository repository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
 
         public async Task<Result<ActorDetailsDto>> CreateActorAsync(ActorCreateDto dto, CancellationToken cancellationToken)
@@ -47,7 +45,6 @@ namespace Application.Services.Actor
             if (actor is null)
             {
                 var actorErorr = Error.NotFound("actor.not.found", $"Actor with id: {id} not found");
-                _logger.LogWarning("Delete actor not found. ActorId={ActorId}, Code = {Code}", id, actorErorr.Code);
                 return Result<bool>.Fail(actorErorr);
             }
 
@@ -64,7 +61,6 @@ namespace Application.Services.Actor
             if (actor is null)
             {
                 var actorErorr = Error.NotFound("actor.not.found", $"Actor with id: {id} not found");
-                _logger.LogWarning("Get actor by id not found. ActorId={ActorId}, Code = {Code}", id, actorErorr.Code);
                 return Result<ActorDetailsDto>.Fail(actorErorr);
             }
 
@@ -82,13 +78,10 @@ namespace Application.Services.Actor
             if (!actors.Any())
             {
                 var actorsErorr = Error.NotFound("actors.not.found", $"Actors with filter no found");
-                _logger.LogWarning("Get filtered actors not found. SearchTerm={SearcTerm}, MovieId={MovieId}, Code={Code}",
-                    actorFilter.SearchTerm, actorFilter.MovieId, actorsErorr.Code);
                 return Result<(List<ActorListItemDto> Actors, int TotalCount)>.Fail(actorsErorr);
             }
 
             var totalCount = await _repository.CountFilteredAsync(actorFilter, cancellationToken);
-
 
             var actorsDto = _mapper.Map<List<ActorListItemDto>>(actors);
 
@@ -102,10 +95,8 @@ namespace Application.Services.Actor
             if (actor is null)
             {
                 var actorErorr = Error.NotFound("actor.not.found", $"Actor with id: {targetId} not found");
-                _logger.LogWarning("Update actor not found. ActorId={ActorId}, Code = {Code}", targetId, actorErorr.Code);
                 return Result<ActorDetailsDto>.Fail(actorErorr);
             }
-
 
             _mapper.Map(dto, actor);
 

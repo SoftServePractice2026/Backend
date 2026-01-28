@@ -15,14 +15,11 @@ namespace Application.Services
         private readonly IHallRepository _repository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<HallService> _logger;
-
-        public HallService(IHallRepository repository, IMapper mapper, IUnitOfWork unitOfWork, ILogger<HallService> logger)
+        public HallService(IHallRepository repository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
 
         public async Task<Result<HallDetailsDto>> CreateHallAsync(HallCreateDto dto, CancellationToken cancellationToken)
@@ -32,7 +29,6 @@ namespace Application.Services
             if (exist is not null)
             {
                 var existErorr = Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist");
-                _logger.LogWarning("Create hall conflict. HallName={HallName}, Code = {Code}", dto.Name, existErorr.Code);
                 return Result<HallDetailsDto>.Fail(existErorr);
             }
 
@@ -53,7 +49,6 @@ namespace Application.Services
             if (hall is null)
             {
                 var hallErorr = Error.NotFound("hall.not.found", $"Hall with id: {id} not found");
-                _logger.LogWarning("Delete hall not found. HallId={HallId}, Code = {Code}", id, hallErorr.Code);
                 return Result<bool>.Fail(hallErorr);
             }
 
@@ -70,7 +65,6 @@ namespace Application.Services
             if (hall is null)
             {
                 var hallErorr = Error.NotFound("hall.not.found", $"Hall with id: {id} not found");
-                _logger.LogWarning("Get hall by id not found. HallId={HallId}, Code = {Code}", id, hallErorr.Code);
                 return Result<HallDetailsDto>.Fail(hallErorr);
             }
 
@@ -86,7 +80,6 @@ namespace Application.Services
             if (hall is null)
             {
                 var hallErorr = Error.NotFound("hall.not.found", $"Hall with name: {name} not found");
-                _logger.LogWarning("Get hall by name not found. HallName={HallName}, Code = {Code}", name, hallErorr.Code);
                 return Result<HallDetailsDto>.Fail(hallErorr);
             }
 
@@ -102,7 +95,6 @@ namespace Application.Services
             if (hall is null)
             {
                 var hallErorr = Error.NotFound("hall.not.found", $"Hall with id: {targetId} not found");
-                _logger.LogWarning("Update hall not found. HallId={HallId}, Code = {Code}", targetId, hallErorr.Code);
                 return Result<HallDetailsDto>.Fail(hallErorr);
             }
 
@@ -111,7 +103,6 @@ namespace Application.Services
             if (nameExist is not null && nameExist.Id != targetId)
             {
                 var nameExistErorr = Error.Conflict("hall.exist", $"Hall with name: {dto.Name} already exist");
-                _logger.LogWarning("Update hall exist. HallName={HallName}, Code = {Code}", dto.Name, nameExistErorr.Code);
                 return Result<HallDetailsDto>.Fail(nameExistErorr);
             }
 
@@ -134,8 +125,6 @@ namespace Application.Services
             if (!halls.Any())
             {
                 var hallsErorr = Error.NotFound("halls.not.found", $"Halls with filter no found");
-                _logger.LogWarning("Get filtered halls not found. IsActive={IsActive}, HallSize={HallSize}, Code={Code}",
-                    hallFilter.IsActive, hallFilter.HallSize, hallsErorr.Code);
                 return Result<(List<HallListItemDto> Halls, int TotalCount)>.Fail(hallsErorr);
             }
 
