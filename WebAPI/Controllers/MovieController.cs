@@ -129,7 +129,6 @@ public class MovieController : BaseController
         return result.IsSuccess ? Ok(result.Value) : result.Error.ToResponse();
     }
     
-    
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MovieDetailsDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ValidationProblemDetails))]
 [HttpPost("genres")]
@@ -171,9 +170,4 @@ public class MovieController : BaseController
             ? result.Error.ToResponse()
             : Ok(result.Value);
     }
-    
-    
-    
-    
-    
 }
