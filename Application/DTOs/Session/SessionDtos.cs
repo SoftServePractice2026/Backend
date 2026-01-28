@@ -1,5 +1,7 @@
 ﻿using Application.DTOs.Common;
+using Application.Interfaces;
 using Domain.Entities.Enums;
+using Shared.Common;
 
 namespace Application.DTOs
 {
@@ -37,8 +39,10 @@ namespace Application.DTOs
         SessionStatusEnum? Status,
         DateTime? From,
         DateTime? To,
-        string? MovieTitle
-    ) : PaginationBaseDto;
+        string? MovieTitle,
+        string? OrderBy,
+        SortDirection SortDirection = SortDirection.Ascending
+    ) : PaginationBaseDto, ISortable;
     
     
     public record SessionFilterResultDto(

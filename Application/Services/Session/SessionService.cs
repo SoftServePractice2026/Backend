@@ -2,6 +2,7 @@
 using Domain.Entities;
 using Shared;
 using Application.DTOs;
+using Domain.Entities.Extensions;
 using Domain.Filters;
 using Domain.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -58,22 +59,6 @@ public class SessionService : ISessionService
         {
             _logger.LogError(ex, "Create session failed.");
             return Result<Guid>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
-        }
-    }
-    
-    
-    public async Task<Result<List<SessionListItemDto>>> GetSessionAllAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var sessions = await _sessionRepository.GetSessionEntitiesAsync(cancellationToken);
-            var result = _mapper.Map<List<SessionListItemDto>>(sessions);
-            return Result<List<SessionListItemDto>>.Success(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Get sessions list failed.");
-            return Result<List<SessionListItemDto>>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
         }
     }
     
@@ -149,22 +134,27 @@ public class SessionService : ISessionService
     }
     
 
-    public async Task<Result<SessionFilterResultDto>> GetFilteredSessionsAsync(SessionFilterDto dto, CancellationToken ct)
+    public async Task<Result<SessionFilterResultDto>> GetFilteredSessionsAsync(
+        SessionFilterDto sessionFilterDto,
+        CancellationToken cancellationToken)
     {
-        var filter = new SessionFilter(
-            dto.MovieId,
-            dto.HallId,
-            dto.Status,
-            dto.From,
-            dto.To,
-            dto.MovieTitle,
-            dto.PageNumber ?? 1,
-            dto.PageSize ?? 10
-        );
-        
-        var sessions = await _sessionRepository.GetFilteredSessionsAsync(filter, ct);
-        var total = await _sessionRepository.CountFilteredAsync(filter, ct);
-        var cards = sessions.Select(BuildCard).ToList();
-        return Result<SessionFilterResultDto>.Success(new SessionFilterResultDto(cards, total));
+        try
+        {
+            var filter = _mapper.Map<SessionFilter>(sessionFilterDto);
+
+            var sessions = await _sessionRepository.GetFilteredSessionsAsync(filter, cancellationToken);
+            var total = await _sessionRepository.CountFilteredAsync(filter, cancellationToken);
+
+            var items = _mapper.Map<List<SessionListItemDto>>(sessions);
+
+            return Result<SessionFilterResultDto>.Success(new SessionFilterResultDto(items, total));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Get filtered sessions failed.");
+            return Result<SessionFilterResultDto>.Fail(Failure.FromError(Error.Internal(message: ex.Message)));
+        }
     }
+
+
 }

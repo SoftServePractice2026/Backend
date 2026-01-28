@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Entities.Extensions;
 using Domain.Filters;
 using Domain.Interfaces;
 using Infrastructure.Extensions;
@@ -42,47 +43,37 @@ public class SessionRepository : ISessionRepository
     }
     
     
-    public async Task<List<SessionEntity>> GetSessionEntitiesAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await _context.Sessions
-                .AsNoTracking()
-                .Include(s => s.Movie)
-                .Include(s => s.Hall)
-                .Include(s => s.Tickets)
-                .ToListAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Db error while getting sessions list");
-            throw;
-        }
-    }
-    
     
     public async Task<bool> HasOverlapAsync(Guid hallId, DateTime start, DateTime end, CancellationToken ct)
     {
-        return await _context.Sessions.AnyAsync(s =>
-                s.HallId == hallId &&
-                start < s.EndTime &&
-                end > s.StartTime,
-            ct);
+        return await _context.Sessions
+            .AsNoTracking()
+            .AnyAsync(s =>
+                    s.HallId == hallId &&
+                    start < s.EndTime &&
+                    end > s.StartTime,
+                ct);
     }
-    
     
     
     public async Task<List<SessionEntity>> GetFilteredSessionsAsync(SessionFilter filter, CancellationToken cancellationToken)
     {
         var query = _context.Sessions
+            .AsNoTracking()
             .Include(s => s.Movie)
             .Include(s => s.Hall)
             .AsQueryable();
 
         query = query.ApplyFilters(filter);
 
+        query = query.ApplyOrderBy(
+            filter.OrderBy,
+            filter.SortDirection,
+            SessionOrderByMap.Map);
+
         var skip = (filter.PageNumber - 1) * filter.PageSize;
         query = query.Skip(skip).Take(filter.PageSize);
+
         try
         {
             return await query.ToListAsync(cancellationToken);

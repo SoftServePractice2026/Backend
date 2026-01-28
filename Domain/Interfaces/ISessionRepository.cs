@@ -11,7 +11,6 @@ public interface ISessionRepository
 
     
     Task<SessionEntity?> GetSessionByIdAsync(Guid sessionId, CancellationToken cancellationToken);
-    Task<List<SessionEntity>> GetSessionEntitiesAsync(CancellationToken ct);
     Task<bool> HasOverlapAsync(Guid hallId, DateTime start, DateTime end, CancellationToken ct);
     
     Task<List<SessionEntity>> GetFilteredSessionsAsync(SessionFilter filter, CancellationToken ct);

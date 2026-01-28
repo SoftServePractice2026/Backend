@@ -1,13 +1,21 @@
 ﻿using Domain.Entities.Enums;
+using Shared.Common;
 
 namespace Domain.Filters;
-public record SessionFilter(
-    Guid? MovieId,
-    Guid? HallId,
-    SessionStatusEnum? Status,
-    DateTime? From,
-    DateTime? To,
-    string? MovieTitle,
-    int PageNumber,
-    int PageSize
-);
+
+public class SessionFilter
+{
+    public Guid? MovieId { get; init; }
+    public Guid? HallId { get; init; }
+    public SessionStatusEnum? Status { get; init; }
+    public DateTime? From { get; init; }
+    public DateTime? To { get; init; }
+    public string? MovieTitle { get; init; }
+
+    public int PageNumber { get; init; }
+    public int PageSize { get; init; }
+
+    
+    public string? OrderBy { get; init; }
+    public SortDirection SortDirection { get; init; }
+}

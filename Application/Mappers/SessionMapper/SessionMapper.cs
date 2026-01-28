@@ -1,7 +1,10 @@
 ﻿namespace Application.Mappers.SessionMapper;
+
 using Application.DTOs;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Filters;
+using Shared.Common;
 
 public class SessionMappingProfile : Profile
 {
@@ -9,7 +12,7 @@ public class SessionMappingProfile : Profile
     {
         CreateMap<SessionCreateDto, SessionEntity>()
             .ForMember(x => x.Id, opt => opt.Ignore());
-        
+
         CreateMap<SessionUpdateDto, SessionEntity>()
             .ForMember(d => d.Id, opt => opt.Ignore())
             .ForMember(d => d.MovieId, opt => opt.Ignore())
@@ -18,7 +21,6 @@ public class SessionMappingProfile : Profile
             .ForMember(d => d.Hall, opt => opt.Ignore())
             .ForMember(d => d.Tickets, opt => opt.Ignore())
             .ForMember(d => d.ViewHistories, opt => opt.Ignore())
-
             .ForMember(d => d.StartTime, opt =>
             {
                 opt.PreCondition(s => s.StartTime.HasValue);
@@ -36,7 +38,6 @@ public class SessionMappingProfile : Profile
             });
 
         
-        
         CreateMap<SessionEntity, SessionListItemDto>()
             .ConstructUsing(s => new SessionListItemDto(
                 s.Id,
@@ -47,6 +48,24 @@ public class SessionMappingProfile : Profile
                 s.StartTime,
                 s.EndTime,
                 s.SessionStatus
-                ));
+            ));
+
+        
+        CreateMap<SessionFilterDto, SessionFilter>()
+            .ConstructUsing(dto => new SessionFilter
+            {
+                MovieId = dto.MovieId,
+                HallId = dto.HallId,
+                Status = dto.Status,
+                From = dto.From,
+                To = dto.To,
+                MovieTitle = dto.MovieTitle,
+
+                PageNumber = dto.PageNumber ?? 1,
+                PageSize = dto.PageSize ?? 10,
+
+                OrderBy = dto.OrderBy,
+                SortDirection = dto.SortDirection
+            });
     }
 }
