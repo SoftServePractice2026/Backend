@@ -34,7 +34,6 @@ public class MovieService : IMovieService
         _logger = logger;
     }
     
-    
     public async Task<Result<MovieDetailsDto, Failure>> CreateMovieAsync(CreateMovieDto request, CancellationToken cancellationToken)
     {
         var existingMovie = await _movieRepository.GetMovieByNameAsync(request.Title, cancellationToken);

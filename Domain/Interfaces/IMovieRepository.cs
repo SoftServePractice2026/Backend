@@ -11,8 +11,6 @@ public interface IMovieRepository
     
     void DeleteMovie(MovieEntity movieEntity);
     
-    
-    
     void AddActorsToMovie(MovieEntity movieEntity, List<Guid> actorsIds);
     
     void AddGenresToMovie(MovieEntity movieEntity, List<Guid> genresIds);
