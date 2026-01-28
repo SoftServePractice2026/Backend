@@ -108,7 +108,7 @@ public class MovieController : BaseController
         }
 
         Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-        Response.Headers.Append("X-Page", filter.Page.ToString());
+        Response.Headers.Append("X-Page", filter.PageNumber.ToString());
         Response.Headers.Append("X-PageSize", filter.PageSize.ToString());
 
         _logger.LogInformation("Request ended: get filtered movies");

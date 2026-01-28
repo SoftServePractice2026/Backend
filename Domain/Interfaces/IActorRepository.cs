@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Filters;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,15 +8,12 @@ namespace Domain.Interfaces
 {
     public interface IActorRepository
     {
-        Task CreateActorAsync(ActorEntity actorEntity);
-        Task DeleteActorAsync(ActorEntity actorEntity);
-        Task UpdateActorAsync(ActorEntity actorEntity);
-        Task<ActorEntity?> GetActorByIdAsync(Guid actorId);
-        Task<IReadOnlyList<ActorEntity>> FindActorsByNameAsync(string actorName);
-        Task<IReadOnlyList<ActorEntity>> FindActorsBySurnameAsync(string actorSurname);
-        Task<IReadOnlyList<ActorEntity>> FindActorsByFullNameAsync(string fullName);
-        Task<IReadOnlyList<ActorEntity>> GetActorEntitiesAsync();
-        Task SaveChangesAsync();
+        void CreateActor(ActorEntity actorEntity);
+        void DeleteActor(ActorEntity actorEntity);
+        void UpdateActor(ActorEntity actorEntity);
+        Task<ActorEntity?> GetActorByIdAsync(Guid actorId, CancellationToken cancellationToken);
+        Task<List<ActorEntity>> GetFilteredActorsAsync(ActorFilter actorFilter, CancellationToken cancellationToken);
+        Task<int> CountFilteredAsync(ActorFilter actorFilter, CancellationToken cancellationToken);
 
     }
 }

@@ -1,7 +1,9 @@
 using Application.Services.Movie.MovieRepository;
 using Domain.Entities;
+using Domain.Entities.Extensions;
 using Domain.Filters;
 using Domain.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -119,32 +121,55 @@ public class MovieRepository : IMovieRepository
             query = query.Where(m => m.AgeRating >= movieFilter.MinAgeRating.Value);
         }
 
-        var skip = (movieFilter.Page - 1) * movieFilter.PageSize;
-        
-        return await query.Skip(skip).Take(movieFilter.PageSize).ToListAsync(cancellationToken);
+        query = query.ApplyOrderBy(
+            movieFilter.OrderBy,
+            movieFilter.SortDirection,
+            MovieOrderByMap.Map);
+
+        var skip = (movieFilter.PageNumber - 1) * movieFilter.PageSize;
+
+        query = query.Skip(skip).Take(movieFilter.PageSize);
+
+        try
+        {
+            return await query.ToListAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Database error while get filtered movies");
+            throw;
+        }
     }
 
     public async Task<int> CountFilteredAsync(MovieFilter movieFilter, CancellationToken cancellationToken)
     {
         var query = _dbContext.Movies.AsQueryable();
-
+        
         if (!string.IsNullOrEmpty(movieFilter.Title))
         {
             query = query.Where(m => m.Title.Contains(movieFilter.Title));
         }
-
-      
+        
+        
         if (movieFilter.GenreIds != null && movieFilter.GenreIds.Any())
         {
             query = query.Where(m => m.Genres.Any(g=> movieFilter.GenreIds.Contains(g.Id)));
         }
-
+        
         if (movieFilter.MinAgeRating.HasValue)
         {
             query = query.Where(m => m.AgeRating >= movieFilter.MinAgeRating.Value);
         }
-        
-        return await query.CountAsync(cancellationToken);
+
+        try
+        {
+            return await query.CountAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Database error while count filtered movies");
+            throw;
+        }
         
     }
 }

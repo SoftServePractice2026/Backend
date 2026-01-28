@@ -1,12 +1,15 @@
-﻿using Domain.Entities.Enums;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using Shared.Common;
 
 namespace Domain.Filters
 {
-    public class HallFilter
+    public class ActorFilter
     {
-        public bool? IsActive { get; init; }
-        public HallSizeEnum? HallSize { get; init; }
+        public string? SearchTerm { get; init; }
+
+        public Guid? MovieId { get; init; }
 
         public int PageNumber { get; init; }
         public int PageSize { get; init; }

@@ -1,8 +1,13 @@
+using Application.DTOs.Common;
+using Application.Interfaces;
+using Shared.Common;
+
 namespace Application.Dtos.Movie;
 
 public record MovieFilterDto(
     string? Title, 
-    Guid? GenreId, 
+    List<Guid>? GenreIds, 
     int? MinAgeRating,
-    int Page = 1, 
-    int PageSize = 10);
+    string? OrderBy = null,
+    SortDirection SortDirection = SortDirection.Ascending)
+    : PaginationBaseDto, ISortable;

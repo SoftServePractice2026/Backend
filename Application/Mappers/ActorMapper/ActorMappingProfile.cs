@@ -1,29 +1,33 @@
 ﻿using Application.DTOs;
+using Application.DTOs.Actor;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Filters;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Application.Mappers
+namespace Application.Mappers.ActorMapper
 {
     public class ActorMappingProfile : Profile
     {
-        public ActorMappingProfile() 
+        public ActorMappingProfile()
         {
             CreateMap<ActorCreateDto, ActorEntity>()
-                .ConstructUsing(dto => new ActorEntity()
-                {
-                    FirstName = dto.FirstName,
-                    LastName = dto.LastName
-                });
+                .ForMember(x => x.Id, opt => opt.Ignore());
 
 
             CreateMap<ActorUpdateDto, ActorEntity>()
-                .ForMember(x => x.Id, opt => opt.Ignore());
+                 .ForMember(x => x.Id, opt => opt.Ignore());
+
 
             CreateMap<ActorEntity, ActorDetailsDto>();
+
             CreateMap<ActorEntity, ActorListItemDto>();
+
+
+            CreateMap<ActorFilterDto, ActorFilter>();
+            CreateMap<ActorFilter, ActorFilterDto>();
         }
     }
 }
