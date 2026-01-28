@@ -93,7 +93,7 @@ namespace WebAPI.Controllers
             }
 
             Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-            Response.Headers.Append("X-Page", actorFilterDto.Page.ToString());
+            Response.Headers.Append("X-Page", actorFilterDto.PageNumber.ToString());
             Response.Headers.Append("X-PageSize", actorFilterDto.PageSize.ToString());
 
             _logger.LogInformation("Request ended: get filtered actor");

@@ -10,7 +10,10 @@ namespace Domain.Filters
 
         public Guid? MovieId { get; init; }
 
-        public int Page { get; init; } = 1;
-        public int PageSize { get; init; } = 10;
+        public int PageNumber { get; init; }
+        public int PageSize { get; init; }
+
+        public string? OrderBy { get; init; }
+        public SortDirection SortDirection { get; init; }
     }
 }

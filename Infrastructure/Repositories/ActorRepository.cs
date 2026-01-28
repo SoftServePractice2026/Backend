@@ -56,7 +56,14 @@ namespace Infrastructure.Repositories
                 query = query.Where(a => a.ActorsInMovies.Any(m => m.MovieId == actorFilter.MovieId));
             }
 
-            var skip = (actorFilter.Page - 1) * actorFilter.PageSize;
+     
+            query = query.ApplyOrderBy(
+                actorFilter.OrderBy,
+                actorFilter.SortDirection,
+                ActorOrederByMap.Map);
+
+       
+            var skip = (actorFilter.PageNumber - 1) * actorFilter.PageSize;
             query = query.Skip(skip).Take(actorFilter.PageSize);
 
             try
