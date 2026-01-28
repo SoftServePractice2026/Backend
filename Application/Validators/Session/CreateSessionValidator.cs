@@ -23,6 +23,16 @@ public class CreateSessionValidator : AbstractValidator<SessionCreateDto>
         RuleFor(x => x.EndTime)
             .NotEmpty().WithMessage("EndTime is required");
 
+        
+        RuleFor(x => x.StartTime)
+            .Must(dt => dt.TimeOfDay >= new TimeSpan(8, 0, 0))
+            .WithMessage("StartTime cannot be earlier than 08:00");
+
+        
+        RuleFor(x => x.EndTime)
+            .Must(dt => dt.TimeOfDay <= new TimeSpan(20, 30, 0))
+            .WithMessage("EndTime cannot be later than 20:30");
+        
 
         RuleFor(x => x)
             .Must(x => x.StartTime < x.EndTime)
