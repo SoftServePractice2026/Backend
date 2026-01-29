@@ -9,6 +9,7 @@ namespace Domain.Interfaces
         void DeleteHall(HallEntity hallEntity);
         void UpdateHall(HallEntity hallEntity);
 
+        Task<bool> ExistsAsync(Guid hallId, CancellationToken cancellationToken);
         Task<HallEntity?> GetHallByIdAsync(Guid hallId, CancellationToken cancellationToken);
         Task<HallEntity?> GetHallByNameAsync(string hallName, CancellationToken cancellationToken);
         Task<List<HallEntity>> GetFilteredHallsAsync(HallFilter hallFilter, CancellationToken cancellationToken);

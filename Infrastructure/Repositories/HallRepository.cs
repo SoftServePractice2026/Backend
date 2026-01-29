@@ -20,6 +20,10 @@ namespace Infrastructure.Repositories
         public void CreateHall(HallEntity hallEntity) => _context.Halls.Add(hallEntity);
         public void DeleteHall(HallEntity hallEntity) => _context.Halls.Remove(hallEntity);
         public void UpdateHall(HallEntity hallEntity) => _context.Halls.Update(hallEntity);
+        public async Task<bool> ExistsAsync(Guid hallId, CancellationToken cancellationToken)
+        {
+            return await _context.Halls.AnyAsync(e => e.Id == hallId, cancellationToken);
+        }
 
         public async Task<HallEntity?> GetHallByIdAsync(Guid hallId, CancellationToken cancellationToken)
         {
