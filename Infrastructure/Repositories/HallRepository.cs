@@ -1,6 +1,8 @@
 ﻿using Domain.Entities;
+using Domain.Entities.Extensions;
 using Domain.Filters;
 using Domain.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -54,13 +56,21 @@ namespace Infrastructure.Repositories
         {
             var query = _context.Halls.AsQueryable();
 
+            //Filters
             if (hallFilter.IsActive.HasValue)
                 query = query.Where(h => h.IsActive == hallFilter.IsActive.Value);
 
             if (hallFilter.HallSize.HasValue)
                 query = query.Where(h => h.HallSize == hallFilter.HallSize.Value);
 
-            var skip = (hallFilter.Page - 1) * hallFilter.PageSize;
+            //Sorting
+            query = query.ApplyOrderBy(
+                hallFilter.OrderBy,
+                hallFilter.SortDirection,
+                HallOrederByMap.Map);
+
+            //Pagination
+            var skip = (hallFilter.PageNumber - 1) * hallFilter.PageSize;
             query = query.Skip(skip).Take(hallFilter.PageSize);
 
             try

@@ -1,6 +1,8 @@
 ﻿using Domain.Entities;
+using Domain.Filters;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,58 +12,98 @@ namespace Infrastructure.Repositories
     public class ActorRepository : IActorRepository
     {
         private readonly CinemaDbContext _context;
-        
-        public ActorRepository(CinemaDbContext context)
+        private readonly ILogger<ActorRepository> _logger;
+
+        public ActorRepository(CinemaDbContext context, ILogger<ActorRepository> logger)
         {
             _context = context;
-        }
-        public async Task CreateActorAsync(ActorEntity actorEntity)
-        {
-            await _context.Actors.AddAsync(actorEntity);
+            _logger = logger;
         }
 
-        public Task DeleteActorAsync(ActorEntity actorEntity)
-        {
-             _context.Actors.Remove(actorEntity);
-            return Task.CompletedTask;
-        }
-
-        public Task UpdateActorAsync(ActorEntity actorEntity)
-        {
-            _context.Actors.Update(actorEntity);
-            return Task.CompletedTask;
-        }
-
-        public async Task<IReadOnlyList<ActorEntity>> FindActorsByFullNameAsync(string fullName)
-        {
-            return await _context.Actors
-           .AsNoTracking()
-           .Where(a => EF.Functions.ILike(a.FirstName + " " + a.LastName, fullName + "%"))
-           .ToListAsync();
-        }
-
-        public async Task<IReadOnlyList<ActorEntity>> FindActorsByNameAsync(string actorName)
-        {
-            return await _context.Actors
-           .Where(a => EF.Functions.ILike(a.FirstName, actorName + "%"))
-           .ToListAsync();
-        }
-      
-
-        public async Task<IReadOnlyList<ActorEntity>> FindActorsBySurnameAsync(string actorSurname)
-        {
-            return await _context.Actors
-           .Where(a => EF.Functions.ILike(a.LastName, actorSurname + "%"))
-           .ToListAsync();
-        }
-
-        public Task<ActorEntity?> GetActorByIdAsync(Guid actorId) => _context.Actors.FirstOrDefaultAsync(x => x.Id == actorId);
+        public void CreateActor(ActorEntity actorEntity) => _context.Actors.Add(actorEntity);
         
 
-        public async Task<IReadOnlyList<ActorEntity>> GetActorEntitiesAsync() => await _context.Actors.ToListAsync();
+        public void DeleteActor(ActorEntity actorEntity) => _context.Actors.Remove(actorEntity);
         
 
-        public Task SaveChangesAsync() => _context.SaveChangesAsync();
+        public void UpdateActor(ActorEntity actorEntity) => _context.Actors.Update(actorEntity);
+        
+
+        public async Task<ActorEntity?> GetActorByIdAsync(Guid actorId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await _context.Actors.FindAsync([actorId], cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(exception, $"Db error while getting actor by id: {actorId}");
+                throw;
+            }
+        }
+
+        public async Task<List<ActorEntity>> GetFilteredActorsAsync(ActorFilter actorFilter, CancellationToken cancellationToken)
+        {
+            var query = _context.Actors.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(actorFilter.SearchTerm))
+            {
+                var term = actorFilter.SearchTerm.Trim();
+                query = query.Where(a => a.FirstName.Contains(term) || a.LastName.Contains(term));
+            }
+
+            if (actorFilter.MovieId.HasValue)
+            {
+                query = query.Where(a => a.ActorsInMovies.Any(m => m.MovieId == actorFilter.MovieId));
+            }
+
+     
+            query = query.ApplyOrderBy(
+                actorFilter.OrderBy,
+                actorFilter.SortDirection,
+                ActorOrederByMap.Map);
+
        
+            var skip = (actorFilter.PageNumber - 1) * actorFilter.PageSize;
+            query = query.Skip(skip).Take(actorFilter.PageSize);
+
+            try
+            {
+                return await query.ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Database error while filtering actors");
+                throw;
+            }
+        }
+
+        public async Task<int> CountFilteredAsync(ActorFilter actorFilter, CancellationToken cancellationToken)
+        {
+            var query = _context.Actors.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(actorFilter.SearchTerm))
+            {
+                var term = actorFilter.SearchTerm.Trim();
+                query = query.Where(a => a.FirstName.Contains(term) || a.LastName.Contains(term));
+            }
+
+            if (actorFilter.MovieId.HasValue)
+            {
+                query = query.Where(a => a.ActorsInMovies.Any(m => m.MovieId == actorFilter.MovieId));
+            }
+
+            try
+            {
+                return await query.CountAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Database error while count filtered actors");
+                throw;
+            }
+        }
     }
 }

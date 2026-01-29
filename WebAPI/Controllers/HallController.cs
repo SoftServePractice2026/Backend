@@ -90,7 +90,7 @@ namespace WebAPI.Controllers
             }
 
             Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
-            Response.Headers.Append("X-Page", hallFilterDto.Page.ToString());
+            Response.Headers.Append("X-Page", hallFilterDto.PageNumber.ToString());
             Response.Headers.Append("X-PageSize", hallFilterDto.PageSize.ToString());
 
             _logger.LogInformation("Request ended: get filtered hall");
