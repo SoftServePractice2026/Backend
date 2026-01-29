@@ -69,12 +69,8 @@ namespace Application.Services.Genre
     GenreFilterDto filter,
     CancellationToken cancellationToken)
         {
-            // 1. Передаємо фільтр у репозиторій
             var genres = await _repository.GetAllGenresAsync(filter, cancellationToken);
 
-            // 2. Перевіряємо результат
-            // Примітка: При пагінації/пошуку іноді краще повертати пустий список (Success),
-            // але я залишаю твою логіку повернення помилки NotFound.
             if (genres == null || !genres.Any())
             {
                 var error = Error.NotFound("genres.not.found", "Genres not found");
@@ -84,7 +80,6 @@ namespace Application.Services.Genre
                 return Result<List<GenreListItemDto>>.Fail(error);
             }
 
-            // 3. Мапимо результат
             var resultDto = _mapper.Map<List<GenreListItemDto>>(genres);
 
             return Result<List<GenreListItemDto>>.Success(resultDto);
