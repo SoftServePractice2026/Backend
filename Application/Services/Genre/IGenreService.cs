@@ -15,7 +15,7 @@ namespace Application.Services.Genre
         Task<Result<bool>> DeleteGenreAsync(Guid id, CancellationToken cancellationToken);
         Task<Result<GenreDetailsDto>> GetGenreByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<Result<GenreDetailsDto>> GetGenreByNameAsync(string name, CancellationToken cancellationToken);
-        Task<Result<List<GenreListItemDto>>> GetGenreAllAsync(CancellationToken cancellationToken);
+        Task<Result<List<GenreListItemDto>>> GetGenreAllAsync(GenreFilterDto filter, CancellationToken cancellationToken);
     }
 
 }

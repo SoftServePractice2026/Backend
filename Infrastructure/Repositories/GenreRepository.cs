@@ -1,9 +1,12 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs.Genre;
+using Domain.Entities;
+using Domain.Entities.Extensions;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Infrastructure.Repositories
@@ -25,9 +28,40 @@ namespace Infrastructure.Repositories
         public void DeleteGenre(GenreEntity genreEntity) => _context.Genres.Remove(genreEntity);
 
 
-        public async Task<List<GenreEntity>> GetAllGenresAsync(CancellationToken cancellationToken) => await _context.Genres.ToListAsync(cancellationToken);
-       
-       
+        public async Task<List<GenreEntity>> GetAllGenresAsync(GenreFilterDto filter, CancellationToken cancellationToken)
+        {
+            var query = _context.Genres.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.Name))
+            {
+                query = query.Where(x => x.Name.Contains(filter.Name.Trim()));
+            }
+
+            query = query.ApplyOrderBy(
+                filter.OrderBy,
+                filter.SortDirection,
+                GenreOrederByMap.Map);
+
+            var pageNumber = filter.PageNumber ?? 1;
+            var pageSize = filter.PageSize ?? 10;
+
+            var skip = (pageNumber - 1) * pageSize;
+            query = query.Skip(skip).Take(pageSize);
+
+            try
+            {
+                return await query.ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Database error while filtering genres");
+                throw;
+            }
+        }
+
+
 
         public async Task<GenreEntity?> GetGenreByIdAsync(Guid genreId, CancellationToken cancellationToken)
         {

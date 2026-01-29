@@ -65,20 +65,26 @@ namespace Application.Services.Genre
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<List<GenreListItemDto>>> GetGenreAllAsync(CancellationToken cancellationToken)
+        public async Task<Result<List<GenreListItemDto>>> GetGenreAllAsync(
+    GenreFilterDto filter,
+    CancellationToken cancellationToken)
         {
-            var genres = await _repository.GetAllGenresAsync(cancellationToken);
+            // 1. Передаємо фільтр у репозиторій
+            var genres = await _repository.GetAllGenresAsync(filter, cancellationToken);
 
+            // 2. Перевіряємо результат
+            // Примітка: При пагінації/пошуку іноді краще повертати пустий список (Success),
+            // але я залишаю твою логіку повернення помилки NotFound.
             if (genres == null || !genres.Any())
             {
                 var error = Error.NotFound("genres.not.found", "Genres not found");
 
-                _logger.LogWarning("Get genres failed. Code={Code}",
-                    error.Code);
+                _logger.LogWarning("Get genres failed. Code={Code}", error.Code);
 
                 return Result<List<GenreListItemDto>>.Fail(error);
             }
 
+            // 3. Мапимо результат
             var resultDto = _mapper.Map<List<GenreListItemDto>>(genres);
 
             return Result<List<GenreListItemDto>>.Success(resultDto);

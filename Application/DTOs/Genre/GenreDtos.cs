@@ -22,4 +22,9 @@ namespace Application.DTOs.Genre
         Guid Id,
         string Name
         );
+
+    public record GenreFilterDto(
+        string? Name,
+        string? OrderBy,
+        SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable; 
 }

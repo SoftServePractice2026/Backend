@@ -3,6 +3,7 @@ using Domain.Filters;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Application.DTOs.Genre;
 
 namespace Domain.Interfaces
 {
@@ -13,7 +14,7 @@ namespace Domain.Interfaces
         void UpdateGenre(GenreEntity genreEntity);
         Task<GenreEntity?> GetGenreByIdAsync(Guid genreId, CancellationToken cancellationToken);
         Task<GenreEntity?> GetGenreByNameAsync(string name, CancellationToken cancellationToken);
-        Task<List<GenreEntity>> GetAllGenresAsync(CancellationToken cancellationToken);
+        Task<List<GenreEntity>> GetAllGenresAsync(GenreFilterDto genreFilter, CancellationToken cancellationToken);
 
     }
 }
