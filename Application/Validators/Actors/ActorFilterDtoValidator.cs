@@ -1,7 +1,7 @@
-﻿using Application.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.DTOs.Actor;
+using Application.Validators.Common;
+using Domain.Entities.Extensions;
+using FluentValidation;
 
 namespace Application.Validators.Actors
 {
