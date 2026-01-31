@@ -2,12 +2,9 @@
 
 namespace Domain.Filters
 {
-    public class ActorFilter
+    public class GenreFilter
     {
-        public string? SearchTerm { get; init; }
-
-        public Guid? MovieId { get; init; }
-
+        public string? Name { get; init; }    
         public int PageNumber { get; init; }
         public int PageSize { get; init; }
 
