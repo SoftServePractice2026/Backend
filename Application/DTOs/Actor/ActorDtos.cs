@@ -1,9 +1,8 @@
-﻿using Domain.Entities.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.DTOs.Common;
+using Application.Interfaces;
+using Shared.Common;
 
-namespace Application.DTOs
+namespace Application.DTOs.Actor
 {
     public record ActorDetailsDto(
            Guid Id,
@@ -27,4 +26,10 @@ namespace Application.DTOs
         string FirstName,
         string LastName
         );
+
+    public record ActorFilterDto(
+       string? SearchTerm,
+       Guid? MovieId,
+       string? OrderBy,
+       SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable;
 }
