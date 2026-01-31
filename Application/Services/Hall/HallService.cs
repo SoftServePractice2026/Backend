@@ -4,9 +4,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Filters;
 using Domain.Interfaces;
-using Microsoft.Extensions.Logging;
 using Shared;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Application.Services
 {

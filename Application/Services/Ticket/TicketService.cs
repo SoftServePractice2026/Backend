@@ -4,25 +4,20 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Shared;
 using Domain.Filters;
-using Microsoft.Extensions.Logging;
 namespace Application.Services.Ticket;
-
 
 public class TicketService : ITicketService
     {
         private readonly ITicketRepository _repository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<TicketService> _logger;
 
-        public TicketService(ITicketRepository repository, IMapper mapper, IUnitOfWork unitOfWork, ILogger<TicketService> logger)
+        public TicketService(ITicketRepository repository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
-
 
         public async Task<Result<TicketDetailsDto>> CreateTicketAsync(TicketCreateDto dto, CancellationToken cancellationToken)
         {
@@ -31,7 +26,6 @@ public class TicketService : ITicketService
             if (isSeatTaken is not null)
             {
                 var conflictError = Error.Conflict("ticket.seat.taken", $"Seat {dto.SeatId} for session {dto.SessionId} is already booked.");
-                _logger.LogWarning("Create ticket conflict. SeatId={SeatId}, SessionId={SessionId}, Code={Code}", dto.SeatId, dto.SessionId, conflictError.Code);
                 return Result<TicketDetailsDto>.Fail(conflictError);
             }
 
@@ -41,12 +35,10 @@ public class TicketService : ITicketService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             var resultDto = _mapper.Map<TicketDetailsDto>(ticket);
-            _logger.LogInformation("Ticket created successfully. TicketId={TicketId}", ticket.Id);
                 
             return Result<TicketDetailsDto>.Success(resultDto);
         }
         
-
         public async Task<Result<TicketDetailsDto>> GetTicketByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var ticket = await _repository.GetTicketByIdAsync(id, cancellationToken);
@@ -54,14 +46,12 @@ public class TicketService : ITicketService
             if (ticket is null)
             {
                 var error = Error.NotFound("ticket.not.found", $"Ticket with id: {id} not found");
-                _logger.LogWarning("Get ticket by id failed. TicketId={TicketId}, Code={Code}", id, error.Code);
                 return Result<TicketDetailsDto>.Fail(error);
             }
             
             return Result<TicketDetailsDto>.Success(_mapper.Map<TicketDetailsDto>(ticket));
         }
         
-
         public async Task<Result<TicketDetailsDto>> UpdateTicketAsync(Guid targetId, TicketUpdateDto dto, CancellationToken cancellationToken)
         {
             var ticket = await _repository.GetTicketByIdAsync(targetId, cancellationToken);
@@ -103,7 +93,6 @@ public class TicketService : ITicketService
             if (!tickets.Any())
             {
                 var error = Error.NotFound("tickets.not.found", "No tickets found for given filter");
-                _logger.LogWarning("Filtered tickets not found. Code={Code}", error.Code);
                 return Result<(List<TicketListItemDto> Tickets, int TotalCount)>.Fail(error);
             }
 

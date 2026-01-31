@@ -10,7 +10,7 @@ namespace WebAPI.Controllers
     public class HallController : BaseController
     {
         private readonly IHallService _hallService;
-        public HallController(IHallService hallService, ILogger<HallController> logger)
+        public HallController(IHallService hallService)
         {
             _hallService = hallService;
         }

@@ -26,7 +26,8 @@ public class LoggingMiddleware
             await _next(context);
 
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-            _logger.LogInformation("HTTP Request Finished: {Id} | Status: {Status}");
+            _logger.LogInformation("HTTP Request Finished: {Id} | Status: {Status}",
+                requestId, "successfully");
         }
         catch (Exception ex)
         {
