@@ -7,7 +7,7 @@ using WebAPI.Mappers;
 namespace WebAPI.Controllers;
 
 [Route("api/v1/seat")]
-public class SeatController : ControllerBase
+public class SeatController : BaseController
 {
     private readonly ISeatService _seatService;
 

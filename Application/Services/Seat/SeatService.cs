@@ -14,23 +14,17 @@ public class SeatService : ISeatService
     private readonly IHallRepository _hallRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly IValidator<CreateSeatDto> _createSeatValidator;
-    private readonly IValidator<UpdateSeatDto> _updateSeatValidator;
     
     public SeatService(
         IHallRepository hallRepository,
         IUnitOfWork unitOfWork, 
         ISeatRepository seatRepository, 
-        IMapper mapper, 
-        IValidator<UpdateSeatDto> updateSeatValidator, 
-        IValidator<CreateSeatDto> createSeatValidator)
+        IMapper mapper)
     {
         _hallRepository = hallRepository;
         _unitOfWork = unitOfWork;
         _seatRepository = seatRepository;
         _mapper = mapper;
-        _updateSeatValidator = updateSeatValidator;
-        _createSeatValidator = createSeatValidator;
     }
     
     public async Task<Result<SeatDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -65,17 +59,6 @@ public class SeatService : ISeatService
 
     public async Task<Result<SeatDto>> CreateAsync(CreateSeatDto dto, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _createSeatValidator.ValidateAsync(dto, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors
-                .Select(e => Error.Validation("Seat.Validation", e.ErrorMessage))
-                .ToArray();
-            
-            return Result<SeatDto>.Fail(new Failure(errors));
-        }
-
         var hallExists = await _hallRepository.ExistsAsync(dto.HallId, cancellationToken);
 
         if (!hallExists)
@@ -109,17 +92,6 @@ public class SeatService : ISeatService
 
     public async Task<Result<SeatDto>> UpdateAsync(UpdateSeatDto dto, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _updateSeatValidator.ValidateAsync(dto, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors
-                .Select(e => Error.Validation("Seat.Validation", e.ErrorMessage))
-                .ToArray();
-            
-            return Result<SeatDto>.Fail(new Failure(errors));
-        }
-
         var seat = await _seatRepository.GetByIdAsync(dto.Id, cancellationToken);
 
         if (seat is null)
