@@ -25,11 +25,13 @@ namespace Infrastructure.EntitiesConfiguration
 
             builder.Property(s => s.StartTime)
                 .HasColumnName("start_time")
-                .HasColumnType("timestamp");
+                .HasColumnType("timestamptz")
+                .IsRequired();
 
             builder.Property(s => s.EndTime)
                 .HasColumnName("end_time")
-                .HasColumnType("timestamp");
+                .HasColumnType("timestamptz")
+                .IsRequired();
             
             builder.Property(s => s.SessionStatus)
                 .HasColumnName("status")
