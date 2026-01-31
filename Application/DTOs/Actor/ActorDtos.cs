@@ -30,6 +30,6 @@ namespace Application.DTOs.Actor
     public record ActorFilterDto(
        string? SearchTerm,
        Guid? MovieId,
-        string? OrderBy,
-        SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable;
+       string? OrderBy,
+       SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable;
 }

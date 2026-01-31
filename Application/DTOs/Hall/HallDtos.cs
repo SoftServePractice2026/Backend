@@ -10,7 +10,7 @@ namespace Application.DTOs
         string Name,
         bool IsActive,
         HallSizeEnum HallSize);
-
+    
     public record HallCreateDto(
         string Name,
         HallSizeEnum HallSize);
@@ -20,12 +20,14 @@ namespace Application.DTOs
         bool IsActive,
         HallSizeEnum HallSize);
 
+    
     public record HallListItemDto(
         Guid Id,
         string Name,
         bool IsActive,
         HallSizeEnum HallSize);
 
+    
     public record HallFilterDto(
         bool? IsActive,
         HallSizeEnum? HallSize,

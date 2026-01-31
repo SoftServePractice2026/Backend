@@ -2,8 +2,9 @@
 {
     public enum SessionStatusEnum
     {
-        Cancelled = 1,
-        Finished = 2,
-        Scheduled = 3
+        Active = 1,
+        Cancelled = 2,
+        Finished = 3,
+        Scheduled = 4
     }
 }

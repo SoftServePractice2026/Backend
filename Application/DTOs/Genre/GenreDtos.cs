@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.DTOs.Common;
+using Application.Interfaces;
+using Shared.Common;
 
-namespace Application.DTOs
+namespace Application.DTOs.Genre
 {
     public record GenreDetailsDto(
            Guid Id,
@@ -22,4 +22,9 @@ namespace Application.DTOs
         Guid Id,
         string Name
         );
+
+    public record GenreFilterDto(
+        string? Name,
+        string? OrderBy,
+        SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable; 
 }

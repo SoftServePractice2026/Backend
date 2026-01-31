@@ -83,6 +83,7 @@ public static class DependencyInjection
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<ISeatRepository, SeatRepository>();
         services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
