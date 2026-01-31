@@ -1,11 +1,11 @@
 ﻿using Application.Services;
+using Application.Services.Actor;
 using Application.Services.Genre;
 using Application.Services.Hall;
 using Application.Services.Identity;
 using Application.Services.Identity.IdentityService;
 using Application.Services.Movie.MovieService;
 using Application.Validators.Halls;
-using Domain.Interfaces;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 

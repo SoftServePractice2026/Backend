@@ -1,4 +1,7 @@
-﻿using Domain.Entities.Enums;
+﻿using Application.DTOs.Common;
+using Application.Interfaces;
+using Domain.Entities.Enums;
+using Shared.Common;
 
 namespace Application.DTOs
 {
@@ -26,6 +29,6 @@ namespace Application.DTOs
     public record HallFilterDto(
         bool? IsActive,
         HallSizeEnum? HallSize,
-        int Page = 1,
-        int PageSize = 10);
+        string? OrderBy,
+        SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable; 
 }

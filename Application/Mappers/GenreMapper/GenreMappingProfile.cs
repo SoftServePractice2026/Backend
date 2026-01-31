@@ -21,6 +21,8 @@ namespace Application.Mappers.GenreMapper
 
             CreateMap<GenreEntity, GenreDetailsDto>();
             CreateMap<GenreEntity, GenreListItemDto>();
+
+            CreateMap<GenreFilterDto, GenreFilter>();
         }
     }
 }

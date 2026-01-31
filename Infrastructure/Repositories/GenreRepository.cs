@@ -1,13 +1,10 @@
-﻿using Application.DTOs.Genre;
-using Domain.Entities;
+﻿using Domain.Entities;
 using Domain.Entities.Extensions;
+using Domain.Filters;
 using Domain.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
 
 namespace Infrastructure.Repositories
 {
@@ -23,12 +20,10 @@ namespace Infrastructure.Repositories
         }
 
         public void CreateGenre(GenreEntity genreEntity) => _context.Genres.Add(genreEntity);
-        
 
         public void DeleteGenre(GenreEntity genreEntity) => _context.Genres.Remove(genreEntity);
 
-
-        public async Task<List<GenreEntity>> GetAllGenresAsync(GenreFilterDto filter, CancellationToken cancellationToken)
+        public async Task<List<GenreEntity>> GetAllGenresAsync(GenreFilter filter, CancellationToken cancellationToken)
         {
             var query = _context.Genres.AsQueryable();
 
@@ -42,11 +37,8 @@ namespace Infrastructure.Repositories
                 filter.SortDirection,
                 GenreOrederByMap.Map);
 
-            var pageNumber = filter.PageNumber ?? 1;
-            var pageSize = filter.PageSize ?? 10;
-
-            var skip = (pageNumber - 1) * pageSize;
-            query = query.Skip(skip).Take(pageSize);
+            var skip = (filter.PageNumber - 1) * filter.PageSize;
+            query = query.Skip(skip).Take(filter.PageSize);
 
             try
             {
@@ -60,8 +52,6 @@ namespace Infrastructure.Repositories
                 throw;
             }
         }
-
-
 
         public async Task<GenreEntity?> GetGenreByIdAsync(Guid genreId, CancellationToken cancellationToken)
         {

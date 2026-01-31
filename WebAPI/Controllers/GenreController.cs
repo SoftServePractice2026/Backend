@@ -1,7 +1,5 @@
-﻿using Application.DTOs;
-using Application.DTOs.Genre;
+﻿using Application.DTOs.Genre;
 using Application.Services.Genre;
-using Application.Services.Hall;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.Mappers;

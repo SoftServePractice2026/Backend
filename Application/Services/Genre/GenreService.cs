@@ -65,11 +65,11 @@ namespace Application.Services.Genre
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<List<GenreListItemDto>>> GetGenreAllAsync(
-    GenreFilterDto filter,
-    CancellationToken cancellationToken)
+        public async Task<Result<List<GenreListItemDto>>> GetGenreAllAsync(GenreFilterDto filter, CancellationToken cancellationToken)
         {
-            var genres = await _repository.GetAllGenresAsync(filter, cancellationToken);
+            var genreFilter = _mapper.Map<GenreFilter>(filter);
+
+            var genres = await _repository.GetAllGenresAsync(genreFilter, cancellationToken);
 
             if (genres == null || !genres.Any())
             {

@@ -1,13 +1,13 @@
-﻿using Application.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Application.DTOs.Genre;
+using Application.Validators.Common;
+using Domain.Entities.Extensions;
+using FluentValidation;
 
 namespace Application.Validators.Genres
 {
-    public class GenresFilterDtoValidator : PaginationBaseDtoValidator<GenreListItemDto>
+    public class GenresFilterDtoValidator : PaginationBaseDtoValidator<GenreFilterDto>
     {
-        public GenreFilterDtoValidator()
+        public GenresFilterDtoValidator()
         {
             RuleFor(x => x.OrderBy)
                 .Must(x => x == null || GenreOrederByMap.Map.ContainsKey(x.ToLower()))
