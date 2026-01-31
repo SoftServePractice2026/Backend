@@ -2,7 +2,7 @@
 
 namespace Domain.Entities.Extensions
 {
-    public static class HallOrederByMap
+    public static class HallOrderByMap
     {
         public static readonly IReadOnlyDictionary<string, Expression<Func<HallEntity, object>>> Map
         = new Dictionary<string, Expression<Func<HallEntity, object>>>

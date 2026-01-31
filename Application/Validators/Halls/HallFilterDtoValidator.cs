@@ -10,7 +10,7 @@ namespace Application.Validators.Halls
         public HallFilterDtoValidator()
         {
             RuleFor(x => x.OrderBy)
-                .Must(x => x == null || HallOrederByMap.Map.ContainsKey(x.ToLower()))
+                .Must(x => x == null || HallOrderByMap.Map.ContainsKey(x.ToLower()))
                 .When(x => x.OrderBy != null)
                 .WithMessage("Invalid OrderBy column");
         }

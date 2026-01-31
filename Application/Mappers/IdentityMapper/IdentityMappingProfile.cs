@@ -9,11 +9,12 @@ public class IdentityMappingProfile : Profile
     public IdentityMappingProfile()
     {
         CreateMap<ApplicationUser, IdentityDetailsDto>()
-            .ForMember(x => x.Name, opt
-                => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
-
-            .ForMember(x => x.Roles, opt
-                => opt.Ignore());
+            .ConstructUsing(src => new IdentityDetailsDto(
+                src.Id,
+                src.UserName,
+                src.Email,
+                new List<string>()))
+            .ForAllMembers(opt => opt.Ignore());
     }
     
 }

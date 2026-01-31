@@ -39,8 +39,15 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<CinemaDbContext>()
             .AddDefaultTokenProviders();
 
-
-        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
+        
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection("JwtOptions"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        
+        
+        var jwtOptions = configuration.GetSection("JwtOptions").Get<JwtOptions>() 
+                         ?? throw new InvalidOperationException("JWT configuration is missing.");
 
         services.AddAuthentication(options =>
             {
@@ -73,8 +80,7 @@ public static class DependencyInjection
 
         services.AddScoped<IJwtProvider, JwtProvider>();
 
-        // services.Configure<JwtOptions>(configuration.GetSection());
-
+        
         //Dependency repositories
         services.AddScoped<IHallRepository, HallRepository>();
         services.AddScoped<IMovieRepository, MovieRepository>();

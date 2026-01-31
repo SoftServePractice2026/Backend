@@ -10,7 +10,7 @@ namespace Application.Validators.Actors
         public ActorFilterDtoValidator() 
         {
             RuleFor(x => x.OrderBy)
-                .Must(x => x == null || ActorOrederByMap.Map.ContainsKey(x.ToLower()))
+                .Must(x => x == null || ActorOrderByMap.Map.ContainsKey(x.ToLower()))
                 .When(x => x.OrderBy != null)
                 .WithMessage("Invalid OrderBy column");
         }

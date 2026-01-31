@@ -61,7 +61,7 @@ namespace Infrastructure.Repositories
             query = query.ApplyOrderBy(
                 actorFilter.OrderBy,
                 actorFilter.SortDirection,
-                ActorOrederByMap.Map);
+                ActorOrderByMap.Map);
 
        
             var skip = (actorFilter.PageNumber - 1) * actorFilter.PageSize;

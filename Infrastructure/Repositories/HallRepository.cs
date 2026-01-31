@@ -67,7 +67,7 @@ namespace Infrastructure.Repositories
             query = query.ApplyOrderBy(
                 hallFilter.OrderBy,
                 hallFilter.SortDirection,
-                HallOrederByMap.Map);
+                HallOrderByMap.Map);
 
             //Pagination
             var skip = (hallFilter.PageNumber - 1) * hallFilter.PageSize;

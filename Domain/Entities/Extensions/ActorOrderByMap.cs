@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Domain.Entities.Extensions
 {
-    public static class ActorOrederByMap
+    public static class ActorOrderByMap
     {
         public static readonly IReadOnlyDictionary<string, Expression<Func<ActorEntity, object>>> Map
        = new Dictionary<string, Expression<Func<ActorEntity, object>>>
