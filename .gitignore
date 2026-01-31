@@ -36,3 +36,4 @@ package-lock.json
 
 # appsettings
 /WebAPI/appsettings.Development.Local.json
+files.txt
