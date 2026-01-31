@@ -1,13 +1,10 @@
 ﻿using Domain.Entities;
+using Domain.Entities.Extensions;
 using Domain.Filters;
 using Domain.Interfaces;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Domain.Entities.Extensions;
-using Infrastructure.Extensions;
 
 namespace Infrastructure.Repositories
 {

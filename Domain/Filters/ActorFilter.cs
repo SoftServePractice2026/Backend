@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Shared.Common;
+﻿using Shared.Common;
 
 namespace Domain.Filters
 {
