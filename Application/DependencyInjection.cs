@@ -8,6 +8,7 @@ using Application.Services.Identity.IdentityService;
 using Application.Services.Movie.MovieService;
 using Application.Services.Ticket;
 using Application.Services.Session;
+using Application.Services.Seat;
 using Application.Validators.Halls;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,8 @@ public static class DependencyInjection
         services.AddScoped<IViewHistoryService, ViewHistoryService>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IMovieService, MovieService>();
+        services.AddScoped<ISeatService, SeatService>();
+
         services.AddScoped<ISessionService, SessionService>();
         return services;
     }
