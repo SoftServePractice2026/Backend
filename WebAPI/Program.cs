@@ -46,8 +46,21 @@ services.AddControllers(options =>
     options.Filters.Add<ValidationFailureFilter>();
 });
 
+services.AddCors(opt =>
+{
+    opt.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
+app.UseCors("FrontendPolicy");
 
 //Checking is runnig database
 using (var scope = app.Services.CreateScope())
