@@ -1,5 +1,8 @@
 using Application.DTOs;
 using Application.Services.Ticket;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.ResponseExtensions;
@@ -19,6 +22,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(TicketDetailsDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
         [HttpPost]
         public async Task<IActionResult> PostTicket([FromBody] TicketCreateDto dto, CancellationToken cancellationToken)
         {
@@ -35,6 +39,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TicketDetailsDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutTicket(Guid id, [FromBody] TicketUpdateDto dto, CancellationToken cancellationToken)
         {
@@ -44,12 +49,13 @@ namespace WebAPI.Controllers
             {
                 return result.Failure!.ToResponse();
             }
-            
+
             return Ok(result.Value);
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteTicket(Guid id, CancellationToken cancellationToken)
         {
@@ -65,6 +71,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TicketListItemDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetTickets([FromQuery] TicketFilterDto ticketFilterDto, CancellationToken cancellationToken)
         {
@@ -74,7 +81,7 @@ namespace WebAPI.Controllers
             {
                 return result.Failure!.ToResponse();
             }
-            
+
             Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
             Response.Headers.Append("X-Page", ticketFilterDto.PageNumber.ToString());
             Response.Headers.Append("X-PageSize", ticketFilterDto.PageSize.ToString());
@@ -84,6 +91,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TicketDetailsDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetTicketById(Guid id, CancellationToken cancellationToken)
         {

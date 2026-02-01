@@ -1,5 +1,8 @@
 ﻿using Application.DTOs;
 using Application.Services.Hall;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.ResponseExtensions;
@@ -18,6 +21,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(HallDetailsDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpPost]
         public async Task<IActionResult> PostHall([FromBody] HallCreateDto dto, CancellationToken cancellationToken)
         {
@@ -35,6 +39,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
         [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutHall(Guid id, HallUpdateDto dto, CancellationToken cancellation)
         {
@@ -50,6 +55,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteHall(Guid id, CancellationToken cancellationToken)
         {
@@ -65,6 +71,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<HallListItemDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetHall([FromQuery] HallFilterDto hallFilterDto, CancellationToken cancellationToken)
         {
@@ -84,6 +91,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HallDetailsDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetHallById(Guid id, CancellationToken cancellationToken)
         {
@@ -98,6 +106,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HallDetailsDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [AllowAnonymous]
         [HttpGet("{name}")]
         public async Task<IActionResult> GetHallByName(string name, CancellationToken cancellationToken)
         {

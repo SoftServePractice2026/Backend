@@ -1,5 +1,8 @@
 using Application.Dtos.Identity;
 using Application.Services.Identity;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using WebAPI.ResponseExtensions;
@@ -15,8 +18,8 @@ public class IdentityControllers : ControllerBase
         _identityService = identityService;
     }
 
+    [AllowAnonymous]
     [HttpPost("/register")]
-
     public async Task<IActionResult> Register(
         [FromBody] RegisterRequest request,
         CancellationToken cancellationToken)
@@ -28,7 +31,7 @@ public class IdentityControllers : ControllerBase
             : Ok(result.Value);
     }
 
-
+    [AllowAnonymous]
     [HttpPost("/login")]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
@@ -41,7 +44,7 @@ public class IdentityControllers : ControllerBase
             : Ok(result.Value);
     }
 
-
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
