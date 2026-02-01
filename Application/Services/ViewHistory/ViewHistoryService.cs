@@ -4,7 +4,6 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Filters;
 using Domain.Interfaces;
-using Microsoft.Extensions.Logging;
 using Shared;
 
 namespace Application.Services
@@ -14,18 +13,15 @@ namespace Application.Services
         private readonly IViewHistoryRepository _repository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<ViewHistoryService> _logger;
 
         public ViewHistoryService(
             IViewHistoryRepository repository, 
             IMapper mapper, 
-            IUnitOfWork unitOfWork, 
-            ILogger<ViewHistoryService> logger)
+            IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
 
         public async Task<Result<ViewHistoryDetailsDto>> CreateViewHistoryAsync(ViewHistoryCreateDto dto, CancellationToken cancellationToken)
@@ -48,7 +44,6 @@ namespace Application.Services
             if (viewHistory is null)
             {
                 var error = Error.NotFound("viewHistory.not.found", $"View history with id: {id} not found");
-                _logger.LogWarning("Delete view history not found. HistoryId={HistoryId}, Code = {Code}", id, error.Code);
                 return Result<bool>.Fail(error);
             }
 
@@ -65,7 +60,6 @@ namespace Application.Services
             if (viewHistory is null)
             {
                 var error = Error.NotFound("viewHistory.not.found", $"View history with id: {id} not found");
-                _logger.LogWarning("Get view history by id not found. HistoryId={HistoryId}, Code = {Code}", id, error.Code);
                 return Result<ViewHistoryDetailsDto>.Fail(error);
             }
 
@@ -81,7 +75,6 @@ namespace Application.Services
             if (viewHistory is null)
             {
                 var error = Error.NotFound("viewHistory.not.found", $"View history with id: {targetId} not found");
-                _logger.LogWarning("Update view history not found. HistoryId={HistoryId}, Code = {Code}", targetId, error.Code);
                 return Result<ViewHistoryDetailsDto>.Fail(error);
             }
 
@@ -104,7 +97,6 @@ namespace Application.Services
             if (!items.Any())
             {
                 var error = Error.NotFound("viewHistory.not.found", "View history items with filter not found");
-                _logger.LogWarning("Get filtered view history not found. Code={Code}", error.Code);
                 return Result<(List<ViewHistoryListItemDto> Items, int TotalCount)>.Fail(error);
             }
 
@@ -117,8 +109,6 @@ namespace Application.Services
         
         public async Task<Result<List<ViewHistoryListItemDto>>> GetViewHistoryByUserIdAsync(Guid userId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: get view history for user {UserId}", userId);
-            
             var filter = new ViewHistoryFilter 
             { 
                 UserId = userId,
@@ -130,13 +120,11 @@ namespace Application.Services
             if (items == null || !items.Any())
             {
                 var error = Error.NotFound("viewHistory.user.empty", $"No view history found for user with id: {userId}");
-                _logger.LogWarning("Get view history for user failed. UserId={UserId}, Code={Code}", userId, error.Code);
                 return Result<List<ViewHistoryListItemDto>>.Fail(error);
             }
 
             var dtos = _mapper.Map<List<ViewHistoryListItemDto>>(items);
 
-            _logger.LogInformation("Request ended: get view history for user {UserId}. Found {Count} items", userId, dtos.Count);
             return Result<List<ViewHistoryListItemDto>>.Success(dtos);
         }
     }

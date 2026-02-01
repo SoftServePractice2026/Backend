@@ -16,14 +16,12 @@ public class IdentityService : IIdentityService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtProvider _jwtProvider;
     private readonly IMapper _mapper;
-    private readonly ILogger<IdentityService> _logger;
 
-    public IdentityService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider,IMapper mapper, ILogger<IdentityService> logger)
+    public IdentityService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider,IMapper mapper)
     {
         _userManager = userManager;
         _jwtProvider = jwtProvider;
         _mapper = mapper;
-        _logger = logger;
     }
 
 
@@ -67,9 +65,6 @@ public class IdentityService : IIdentityService
         
         return Result.Success<AuthResponse, Failure>(response);
     }
-
-
-
 
     public async Task LogoutAsync()
     {

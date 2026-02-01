@@ -5,8 +5,6 @@ using Domain.Interfaces;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Domain.Entities.Extensions;
-using Infrastructure.Extensions;
 
 namespace Infrastructure.Repositories
 {

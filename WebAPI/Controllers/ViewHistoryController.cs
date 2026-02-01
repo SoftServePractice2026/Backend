@@ -1,5 +1,4 @@
 using Application.DTOs;
-using Application.Services;
 using Application.Services.ViewHistory;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
@@ -12,12 +11,10 @@ namespace WebAPI.Controllers
     public class ViewHistoryController : BaseController
     {
         private readonly IViewHistoryService _viewHistoryService;
-        private readonly ILogger<ViewHistoryController> _logger;
 
-        public ViewHistoryController(IViewHistoryService viewHistoryService, ILogger<ViewHistoryController> logger)
+        public ViewHistoryController(IViewHistoryService viewHistoryService)
         {
             _viewHistoryService = viewHistoryService;
-            _logger = logger;
         }
 
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ViewHistoryDetailsDto))]
@@ -26,16 +23,12 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostViewHistory([FromBody] ViewHistoryCreateDto dto, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: post view history");
-
             var result = await _viewHistoryService.CreateViewHistoryAsync(dto, cancellationToken);
 
             if (result.IsFailure)
             {
                 return result.Failure!.ToResponse();
             }
-
-            _logger.LogInformation("Request ended: post view history");
             
             return CreatedAtAction(nameof(GetViewHistoryById), new { id = result.Value!.Id }, result.Value);
         }
@@ -46,8 +39,6 @@ namespace WebAPI.Controllers
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutViewHistory(Guid id, ViewHistoryUpdateDto dto, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: put view history");
-
             var result = await _viewHistoryService.UpdateViewHistoryAsync(id, dto, cancellationToken);
 
             if (result.IsFailure)
@@ -55,7 +46,6 @@ namespace WebAPI.Controllers
                 return result.Failure!.ToResponse();
             }
 
-            _logger.LogInformation("Request ended: put view history");
             return Ok(result.Value);
         }
 
@@ -64,16 +54,13 @@ namespace WebAPI.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteViewHistory(Guid id, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: delete view history");
-
             var result = await _viewHistoryService.DeleteViewHistoryAsync(id, cancellationToken);
 
             if (result.IsFailure)
             {
                 return result.Failure!.ToResponse();
             }
-
-            _logger.LogInformation("Request ended: delete view history");
+            
             return Ok(result.Value);
         }
 
@@ -82,8 +69,6 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetViewHistory([FromQuery] ViewHistoryFilterDto filterDto, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: get filtered view history");
-
             var result = await _viewHistoryService.GetFilteredViewHistoryAsync(filterDto, cancellationToken);
 
             if (result.IsFailure)
@@ -94,8 +79,7 @@ namespace WebAPI.Controllers
             Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
             Response.Headers.Append("X-Page", filterDto.PageNumber.ToString());
             Response.Headers.Append("X-PageSize", filterDto.PageSize.ToString());
-
-            _logger.LogInformation("Request ended: get filtered view history");
+            
             return Ok(result.Value.Items);
         }
 
@@ -104,8 +88,6 @@ namespace WebAPI.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetViewHistoryById(Guid id, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: get view history by id");
-
             var result = await _viewHistoryService.GetViewHistoryByIdAsync(id, cancellationToken);
 
             if (result.IsFailure)
@@ -113,7 +95,6 @@ namespace WebAPI.Controllers
                 return result.Failure!.ToResponse();
             }
 
-            _logger.LogInformation("Request ended: get view history by id");
             return Ok(result.Value);
         }
     }

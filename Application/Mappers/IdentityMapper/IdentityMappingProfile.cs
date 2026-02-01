@@ -11,8 +11,8 @@ public class IdentityMappingProfile : Profile
         CreateMap<ApplicationUser, IdentityDetailsDto>()
             .ConstructUsing(src => new IdentityDetailsDto(
                 src.Id,
-                src.UserName,
-                src.Email,
+                src.UserName!,
+                src.Email!,
                 new List<string>()))
             .ForAllMembers(opt => opt.Ignore());
     }

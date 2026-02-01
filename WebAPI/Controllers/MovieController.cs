@@ -10,16 +10,14 @@ namespace WebAPI.Controllers;
 [Route("api/v1/movies")]
 public class MovieController : BaseController
 {
-    private readonly ILogger<MovieController> _logger;
     private readonly IMovieService _movieService;
 
-    public MovieController(IMovieService movieService, ILogger<MovieController> logger)
+    public MovieController(IMovieService movieService)
     {
         _movieService = movieService;
-        _logger = logger;
+
     }
 
-    
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MovieDetailsDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [HttpPost]
@@ -28,9 +26,6 @@ public class MovieController : BaseController
         CancellationToken cancellationToken)
     {
         var result = await _movieService.CreateMovieAsync(request, cancellationToken);
-        
-        
-        _logger.LogInformation("Request ended: post movie");
         
         return result.IsFailure ? result.Error.ToResponse() : Ok(result.Value);
     }
@@ -47,8 +42,6 @@ public class MovieController : BaseController
         
         var result = await _movieService.GetMovieByIdAsync(request, cancellationToken);
         
-        _logger.LogInformation("Request ended: get movie by id");
-        
         return result.IsFailure 
             ? result.Error.ToResponse()
             : Ok(result.Value);
@@ -64,8 +57,6 @@ public class MovieController : BaseController
         CancellationToken cancellationToken)
     {
         var result = await _movieService.UpdateMovieAsync(request, cancellationToken);
-        
-        _logger.LogInformation("Request ended: put movie");
         
         return result.IsFailure 
             ? result.Error.ToResponse()
@@ -84,9 +75,6 @@ public class MovieController : BaseController
         var request = new DeleteMovieDto(id);
         var result = await _movieService.DeleteMovieAsync(request, cancellationToken);
         
-        
-        _logger.LogInformation("Request ended: delete movie");
-        
         return result.IsFailure 
             ? result.Error.ToResponse()
             : Ok(result.Value);
@@ -98,8 +86,6 @@ public class MovieController : BaseController
 
     public async Task<IActionResult> GetMovies([FromQuery] MovieFilterDto filter, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Request started: get filtered movies");
-        
         var result = await _movieService.GetFilteredMoviesAsync(filter, cancellationToken);
 
         if (result.IsFailure)
@@ -111,7 +97,6 @@ public class MovieController : BaseController
         Response.Headers.Append("X-Page", filter.PageNumber.ToString());
         Response.Headers.Append("X-PageSize", filter.PageSize.ToString());
 
-        _logger.LogInformation("Request ended: get filtered movies");
         return Ok(result.Value.Movies);
     }
 
@@ -123,9 +108,6 @@ public class MovieController : BaseController
     {
         var result = await _movieService.AddActorsToMovieAsync(request, cancellationToken);
 
-        
-        _logger.LogInformation("Request ended: add actors to movie");
-        
         return result.IsSuccess ? Ok(result.Value) : result.Error.ToResponse();
     }
     
@@ -137,8 +119,6 @@ public class MovieController : BaseController
     {
         var result = await _movieService.AddGenresToMovieAsync(request, cancellationToken);
 
-        _logger.LogInformation("Request ended: add genres to movie");
-        
         return result.IsSuccess
             ? Ok(result.Value)
             : result.Error.ToResponse();

@@ -13,12 +13,10 @@ namespace WebAPI.Controllers
     public class ActorController : BaseController
     {
         private readonly IActorService _actorService;
-        private readonly ILogger<ActorController> _logger;
 
-        public ActorController(IActorService actorService, ILogger<ActorController> logger)
+        public ActorController(IActorService actorService)
         {
             _actorService = actorService;
-            _logger = logger;
         }
 
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ActorDetailsDto))]
@@ -27,16 +25,13 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostActor([FromBody] ActorCreateDto dto, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: post hall");
-
             var result = await _actorService.CreateActorAsync(dto, cancellationToken);
 
             if (result.IsFailure)
             {
                 return result.Failure!.ToResponse();
             }
-
-            _logger.LogInformation("Request ended: post actor");
+            
             return CreatedAtAction(nameof(GetActorById), new { id = result.Value!.Id }, result.Value);
         }
 
@@ -47,16 +42,13 @@ namespace WebAPI.Controllers
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutActor(Guid id, ActorUpdateDto dto, CancellationToken cancellation)
         {
-            _logger.LogInformation("Request started: put actor");
-
             var result = await _actorService.UpdateActorAsync(id, dto, cancellation);
 
             if (result.IsFailure)
             {
                 return result.Failure!.ToResponse();
             }
-
-            _logger.LogInformation("Request ended: put actor");
+            
             return Ok(result.Value);
         }
 
@@ -65,16 +57,12 @@ namespace WebAPI.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteActor(Guid id, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: delete actor");
-
             var result = await _actorService.DeleteActorAsync(id, cancellationToken);
 
             if (result.IsFailure)
             {
                 return result.Failure!.ToResponse();
             }
-
-            _logger.LogInformation("Request ended: delete actor");
             return Ok(result.Value);
         }
 
@@ -83,8 +71,6 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetActor([FromQuery] ActorFilterDto actorFilterDto, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: get filtered actor");
-
             var result = await _actorService.GetFilteredActorsAsync(actorFilterDto, cancellationToken);
 
             if (result.IsFailure)
@@ -96,7 +82,6 @@ namespace WebAPI.Controllers
             Response.Headers.Append("X-Page", actorFilterDto.PageNumber.ToString());
             Response.Headers.Append("X-PageSize", actorFilterDto.PageSize.ToString());
 
-            _logger.LogInformation("Request ended: get filtered actor");
             return Ok(result.Value.Actors);
         }
 
@@ -105,16 +90,13 @@ namespace WebAPI.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetActorById(Guid id, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Request started: get actor by id");
-
             var result = await _actorService.GetActorByIdAsync(id, cancellationToken);
 
             if (result.IsFailure)
             {
                 return result.Failure!.ToResponse();
             }
-
-            _logger.LogInformation("Request ended: get actor by id");
+            
             return Ok(result.Value);
         }
 
