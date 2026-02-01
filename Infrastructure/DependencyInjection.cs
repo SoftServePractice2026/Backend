@@ -11,6 +11,7 @@ using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Domain.Constants;
 
 namespace Infrastructure;
 
@@ -31,11 +32,14 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString);
         });
 
-        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+        services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
                 options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 6;
             })
+            .AddRoles<ApplicationRole>()
             .AddEntityFrameworkStores<CinemaDbContext>()
             .AddDefaultTokenProviders();
 
@@ -77,9 +81,20 @@ public static class DependencyInjection
                 };
             });
 
+        services.AddAuthorization(opt =>
+        {
+            opt.AddPolicy(Policy.UserPolicy, policy =>
+            {
+                policy.RequireRole(Role.User, Role.Admin);
+            });
+
+            opt.AddPolicy(Policy.AdminPolicy, policy =>
+            {
+                policy.RequireRole(Role.Admin);
+            });
+        });
 
         services.AddScoped<IJwtProvider, JwtProvider>();
-
         
         //Dependency repositories
         services.AddScoped<IHallRepository, HallRepository>();

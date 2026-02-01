@@ -3,10 +3,10 @@ using Application.Dtos;
 using Application.Dtos.Identity;
 using AutoMapper;
 using CSharpFunctionalExtensions;
+using Domain.Constants;
 using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Shared;
 
 namespace Application.Services.Identity.IdentityService;
@@ -14,34 +14,45 @@ namespace Application.Services.Identity.IdentityService;
 public class IdentityService : IIdentityService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IJwtProvider _jwtProvider;
     private readonly IMapper _mapper;
 
-    public IdentityService(UserManager<ApplicationUser> userManager, IJwtProvider jwtProvider,IMapper mapper)
+    public IdentityService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IJwtProvider jwtProvider, IMapper mapper)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
         _jwtProvider = jwtProvider;
         _mapper = mapper;
     }
 
-
     public async Task<Result<IdentityDetailsDto, Failure>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var user = new ApplicationUser
+        var userExist = await _userManager.FindByEmailAsync(request.Email);
+
+        if (userExist is not null)
         {
-            UserName = request.Email,
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            BirthDate = request.BirthDate
-        };
-        
+            return Failure.FromError(Error.Conflict("user.already.exist", $"User with email: {request.Email} already exist"));
+        }
+
+        var user = _mapper.Map<ApplicationUser>(request);
+
+        var userRole = Role.User;
+        if (!await _roleManager.RoleExistsAsync(userRole))
+        {
+            return Failure.FromError(Error.Internal("user.role.not.found", "User role not found"));
+        }
+
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
         {
-            return Failure.FromError(Error.Validation("Registration failed", "Registration failed."));
+            var errors = result.Errors.Select(e => Error.Validation(e.Code, e.Description));
+            return new Failure(errors);
         }
+
+        var roleEntity = await _roleManager.FindByNameAsync(userRole);
+        var addRoleResult = await _userManager.AddToRoleAsync(user, roleEntity!.Name!);
         
         var detailsDto = _mapper.Map<IdentityDetailsDto>(user);
         

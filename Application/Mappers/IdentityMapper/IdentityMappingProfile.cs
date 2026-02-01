@@ -1,4 +1,5 @@
 using Application.Dtos;
+using Application.Dtos.Identity;
 using AutoMapper;
 using Infrastructure.Identity.Data;
 
@@ -12,9 +13,18 @@ public class IdentityMappingProfile : Profile
             .ConstructUsing(src => new IdentityDetailsDto(
                 src.Id,
                 src.UserName!,
-                src.Email!,
-                new List<string>()))
+                src.Email!))
+            .ForAllMembers(opt => opt.Ignore());
+
+        CreateMap<RegisterRequest, ApplicationUser>()
+            .ConstructUsing(src => new ApplicationUser()
+            {
+                Email = src.Email,
+                UserName = src.Email,
+                FirstName = src.FirstName,
+                LastName = src.LastName,
+                BirthDate = src.BirthDate,
+            })
             .ForAllMembers(opt => opt.Ignore());
     }
-    
 }
