@@ -2,6 +2,7 @@
 using Application.Services.Movie.MovieRepository;
 using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +16,7 @@ namespace Application.Services.ExternalMovie
         Ignored 
     }
 
-    public class MovieImportService
+    public class MovieImportService : IMovieImportService
     {
         private readonly IExternalMovieService _externalMovieService;
         private readonly IMovieRepository _movieRepository;
@@ -82,30 +83,31 @@ namespace Application.Services.ExternalMovie
                 existingMovies.Description = dto.Description;
                 existingMovies.Poster = dto.Poster;
                 existingMovies.Rating = dto.Rating;
+
+                await _unitOfWork.SaveChangesAsync(); 
                 return ImportStatus.Updated;
             }
 
             var newMovie = MovieEntity.Create(
-                dto.Poster,          
-                dto.Title,                
-                dto.Description,             
+                dto.Poster,
+                dto.Title,
+                dto.Description,
                 ParseAgeRating(dto.AgeRating),
-                dto.Language,     
-                dto.Duration,       
-                releaseDate,             
-                releaseDate.AddMonths(2)  
+                dto.Language,
+                dto.Duration,
+                releaseDate,
+                releaseDate.AddMonths(2)
             );
 
             newMovie.TmdbId = dto.TmdbId;
             newMovie.Rating = dto.Rating;
 
             newMovie.Genres = new List<GenreEntity>();
-            if( dto.Genres != null)
+            if (dto.Genres != null)
             {
-                foreach(var genreName in dto.Genres)
+                foreach (var genreName in dto.Genres)
                 {
                     var genre = await _genreRepository.GetGenreByNameAsync(genreName, ct);
-
                     if (genre == null)
                     {
                         genre = new GenreEntity
@@ -113,12 +115,11 @@ namespace Application.Services.ExternalMovie
                             Id = Guid.NewGuid(),
                             Name = genreName
                         };
-                    }
 
+                    }
                     newMovie.Genres.Add(genre);
                 }
             }
-
 
             if (newMovie.ActorsInMovies == null) newMovie.ActorsInMovies = new List<MovieActorEntity>();
 
@@ -126,18 +127,21 @@ namespace Application.Services.ExternalMovie
             {
                 foreach (var castDto in dto.Cast)
                 {
-
                     var actor = await _actorRepository.GetByTmdbIdAsync(castDto.TmdbId);
 
                     if (actor == null)
                     {
+                        var names = castDto.FullName?.Split(' ') ?? new string[] { "Unknown" };
+                        var firstName = names[0];
+                        var lastName = names.Length > 1 ? string.Join(" ", names.Skip(1)) : "";
+
                         actor = new ActorEntity
                         {
                             Id = Guid.NewGuid(),
                             TmdbId = castDto.TmdbId,
-                            FirstName = castDto.FullName.Split(' ')[0],
-                            LastName = castDto.FullName.Split(" ")[1],
-                            Photo = castDto.PhotoUrl 
+                            FirstName = firstName,
+                            LastName = lastName, 
+                            Photo = castDto.PhotoUrl ?? "https://placehold.co/200x300?text=No+Photo"
                         };
                     }
 
@@ -153,7 +157,9 @@ namespace Application.Services.ExternalMovie
                 }
             }
 
-             _movieRepository.AddMovie(newMovie);
+            _movieRepository.AddMovie(newMovie);
+
+            await _unitOfWork.SaveChangesAsync();
 
             return ImportStatus.Added;
 

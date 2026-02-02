@@ -41,6 +41,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("character varying(40)")
                         .HasColumnName("last_name");
 
+                    b.Property<string>("Photo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("TmdbId")
                         .HasColumnType("integer");
 

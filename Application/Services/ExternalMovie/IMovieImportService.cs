@@ -7,6 +7,6 @@ namespace Application.Services.ExternalMovie
 {
     public interface IMovieImportService
     {
-        Task<ImportStatsDto> ImportFromTmdbAsync(int pagesCount);
+        Task<ImportStatsDto> ImportFromTmdbAsync(int pagesCount, CancellationToken ct);
     }
 }

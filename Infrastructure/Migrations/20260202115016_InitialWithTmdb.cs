@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class InitialWithTmdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,7 +19,8 @@ namespace Infrastructure.Migrations
                     actor_id = table.Column<Guid>(type: "uuid", nullable: false),
                     first_name = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     last_name = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
-                    TmdbId = table.Column<int>(type: "integer", nullable: false)
+                    TmdbId = table.Column<int>(type: "integer", nullable: false),
+                    Photo = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

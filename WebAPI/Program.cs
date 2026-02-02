@@ -1,13 +1,14 @@
 using Application;
+using Application.Interfaces;
+using Application.Services;
+using Application.Services.ExternalMovie;
 using FluentValidation.AspNetCore;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Filters;
 using WebAPI.Middlewares;
-
 var builder = WebApplication.CreateBuilder(args);
 
-// add override appsettings.json from appsettings.Development.Local.json
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
@@ -17,23 +18,22 @@ builder.Configuration
 
 var services = builder.Services;
 
-//Add dependency to custom filter
 services.AddScoped<ValidationFailureFilter>();
 
-//Add auto fluent validation on api controllers
 services.AddFluentValidationAutoValidation();
 
 services.AddOpenApi();
 
-
-
-//Add dependency from layers
 services
     .AddApplication()
     .AddInfrastructure(services, builder.Configuration);
 
 
-//Add swagger
+services.AddHttpClient<IExternalMovieService, TMDBService>();
+
+services.AddScoped<IMovieImportService, MovieImportService>();
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -42,14 +42,12 @@ builder.Services.AddSwaggerGen(c =>
 
 services.AddControllers(options =>
 {
-    //Add custom filter
     options.Filters.Add<ValidationFailureFilter>();
 });
 
 var app = builder.Build();
 
 
-//Checking is runnig database
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
