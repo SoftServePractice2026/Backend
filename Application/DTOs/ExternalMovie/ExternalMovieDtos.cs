@@ -22,4 +22,11 @@ namespace Application.DTOs.ExternalMovieDto
         string FullName,
         string PhotoUrl
         );
+
+    public record ImportStatsDto(
+        int Added,
+        int Updated,
+        int Failed,
+        int Total
+        );
 }
