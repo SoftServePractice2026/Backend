@@ -23,10 +23,16 @@ public class MovieRepository : IMovieRepository
     public void AddMovie(MovieEntity movieEntity) => _dbContext.Movies.Add(movieEntity);
     public void UpdateMovie(MovieEntity movieEntity) => _dbContext.Movies.Update(movieEntity);
     public void DeleteMovie(MovieEntity movieEntity) => _dbContext.Movies.Remove(movieEntity);
-    
-    
-    
-    
+
+
+    public async Task<MovieEntity?> GetByTmdbIdAsync(int tmdbId)
+    {
+        return await _dbContext.Movies
+            .Include(m => m.Genres) 
+            .Include(m => m.ActorsInMovies).ThenInclude(am => am.Actor) 
+            .FirstOrDefaultAsync(m => m.TmdbId == tmdbId);
+    }
+
     public void AddActorsToMovie(MovieEntity movieEntity, List<Guid> actorsIds)
     {
         var newActorLinks =

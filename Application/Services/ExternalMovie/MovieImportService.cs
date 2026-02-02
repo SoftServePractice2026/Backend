@@ -72,7 +72,7 @@ namespace Application.Services.ExternalMovie
 
         private async Task<ImportStatus> SaveMovieInternalAsync(ExternalMovieDto dto)
         {
-
+            return ImportStatus.Added;
         }
 
     }

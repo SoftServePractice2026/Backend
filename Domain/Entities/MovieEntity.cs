@@ -38,6 +38,7 @@ namespace Domain.Entities
         public decimal? Rating { get; set; }
         public DateTime RentalStartDate { get; set; }
         public DateTime RentalEndDate { get; set; }
+        public int? TmdbId { get; set; }
 
         public ICollection<GenreEntity> Genres { get; set; } = new List<GenreEntity>();
         public ICollection<MovieActorEntity> ActorsInMovies { get; set; } = new List<MovieActorEntity>();

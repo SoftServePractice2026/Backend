@@ -26,7 +26,12 @@ namespace Infrastructure.Repositories
         
 
         public void UpdateActor(ActorEntity actorEntity) => _context.Actors.Update(actorEntity);
-        
+
+        public async Task<ActorEntity?> GetByTmdbIdAsync(int tmdbId)
+        {
+            return await _context.Actors
+                .FirstOrDefaultAsync(a => a.TmdbId == tmdbId);
+        }
 
         public async Task<ActorEntity?> GetActorByIdAsync(Guid actorId, CancellationToken cancellationToken)
         {
