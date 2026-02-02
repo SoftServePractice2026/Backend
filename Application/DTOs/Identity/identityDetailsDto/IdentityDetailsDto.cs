@@ -2,5 +2,8 @@ namespace Application.Dtos;
 
 public record IdentityDetailsDto(
     Guid Id, 
-    string Name, 
-    string Email);
+    string FirstName, 
+    string LastName,
+    string Email,
+    DateTime BirthDate,
+    ICollection<string> Roles);

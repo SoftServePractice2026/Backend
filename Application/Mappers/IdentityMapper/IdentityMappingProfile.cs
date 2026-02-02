@@ -9,12 +9,12 @@ public class IdentityMappingProfile : Profile
 {
     public IdentityMappingProfile()
     {
-        CreateMap<ApplicationUser, IdentityDetailsDto>()
-            .ConstructUsing(src => new IdentityDetailsDto(
-                src.Id,
-                src.UserName!,
-                src.Email!))
-            .ForAllMembers(opt => opt.Ignore());
+        //CreateMap<ApplicationUser, IdentityDetailsDto>()
+        //    .ConstructUsing(src => new IdentityDetailsDto(
+        //        src.Id,
+        //        src.UserName!,
+        //        src.Email!))
+        //    .ForAllMembers(opt => opt.Ignore());
 
         CreateMap<RegisterRequest, ApplicationUser>()
             .ConstructUsing(src => new ApplicationUser()
