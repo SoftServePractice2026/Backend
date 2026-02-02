@@ -12,9 +12,10 @@ namespace Application.DTOs.ExternalMovieDto
     int Duration,
     string Language,
     decimal Rating,
-    string AgeRating,
+    bool AgeRating,
     List<string> Genres,
-    List<ExternalActorDto> Cast
+    List<ExternalActorDto> Cast,
+    DateTime ReleaseDate
     );
 
     public record ExternalActorDto(

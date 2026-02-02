@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.ExternalMovieDto;
 using Application.Services.Movie.MovieRepository;
+using Domain.Entities;
 using Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace Application.Services.ExternalMovie
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ImportStatsDto> ImportFromTmdbAsync(int pagesCount)
+        public async Task<ImportStatsDto> ImportFromTmdbAsync(int pagesCount, CancellationToken ct)
         {
             int added = 0;
             int updated = 0;
@@ -52,7 +53,7 @@ namespace Application.Services.ExternalMovie
                             continue;
                         }
 
-                        var status = await SaveMovieInternalAsync(dto);
+                        var status = await SaveMovieInternalAsync(dto, ct);
 
                         await _unitOfWork.SaveChangesAsync();
 
@@ -70,10 +71,96 @@ namespace Application.Services.ExternalMovie
             return new ImportStatsDto(added, updated, failed, total);
         }
 
-        private async Task<ImportStatus> SaveMovieInternalAsync(ExternalMovieDto dto)
+        private async Task<ImportStatus> SaveMovieInternalAsync(ExternalMovieDto dto, CancellationToken ct)
         {
-            return ImportStatus.Added;
-        }
+            var existingMovies = await _movieRepository.GetByTmdbIdAsync(dto.TmdbId);
+            var releaseDate = dto.ReleaseDate;
 
+            if (existingMovies is not null)
+            {
+                existingMovies.Title = dto.Title;
+                existingMovies.Description = dto.Description;
+                existingMovies.Poster = dto.Poster;
+                existingMovies.Rating = dto.Rating;
+                return ImportStatus.Updated;
+            }
+
+            var newMovie = MovieEntity.Create(
+                dto.Poster,          
+                dto.Title,                
+                dto.Description,             
+                ParseAgeRating(dto.AgeRating),
+                dto.Language,     
+                dto.Duration,       
+                releaseDate,             
+                releaseDate.AddMonths(2)  
+            );
+
+            newMovie.TmdbId = dto.TmdbId;
+            newMovie.Rating = dto.Rating;
+
+            newMovie.Genres = new List<GenreEntity>();
+            if( dto.Genres != null)
+            {
+                foreach(var genreName in dto.Genres)
+                {
+                    var genre = await _genreRepository.GetGenreByNameAsync(genreName, ct);
+
+                    if (genre == null)
+                    {
+                        genre = new GenreEntity
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = genreName
+                        };
+                    }
+
+                    newMovie.Genres.Add(genre);
+                }
+            }
+
+
+            if (newMovie.ActorsInMovies == null) newMovie.ActorsInMovies = new List<MovieActorEntity>();
+
+            if (dto.Cast != null)
+            {
+                foreach (var castDto in dto.Cast)
+                {
+
+                    var actor = await _actorRepository.GetByTmdbIdAsync(castDto.TmdbId);
+
+                    if (actor == null)
+                    {
+                        actor = new ActorEntity
+                        {
+                            Id = Guid.NewGuid(),
+                            TmdbId = castDto.TmdbId,
+                            FirstName = castDto.FullName.Split(' ')[0],
+                            LastName = castDto.FullName.Split(" ")[1],
+                            Photo = castDto.PhotoUrl 
+                        };
+                    }
+
+                    var movieActor = new MovieActorEntity
+                    {
+                        MovieId = newMovie.Id,
+                        Movie = newMovie,
+                        ActorId = actor.Id,
+                        Actor = actor
+                    };
+
+                    newMovie.ActorsInMovies.Add(movieActor);
+                }
+            }
+
+             _movieRepository.AddMovie(newMovie);
+
+            return ImportStatus.Added;
+
+        }
+        private int ParseAgeRating(bool isAdult)
+        {
+            return isAdult ? 18 : 0; 
+        }
     }
 }
