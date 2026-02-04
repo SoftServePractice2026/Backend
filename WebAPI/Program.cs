@@ -47,24 +47,19 @@ builder.Services.AddOpenApiDocument(opt =>
     opt.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
 
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new() { Title = "AbsoluteCinema API", Version = "v1" });
-//});
-
 services.AddControllers(options =>
 {
     //Add custom filter
     options.Filters.Add<ValidationFailureFilter>();
 });
 
+var frontendOrigins = builder.Configuration.GetSection("Cors").GetSection("AllowedOrigins").Get<string[]>();
 services.AddCors(opt =>
 {
     opt.AddPolicy("FrontendPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(frontendOrigins!)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
