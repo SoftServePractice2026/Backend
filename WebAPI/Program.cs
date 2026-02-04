@@ -1,11 +1,12 @@
 using Application;
 using FluentValidation.AspNetCore;
 using Infrastructure;
+using Infrastructure.Seeders;
 using Microsoft.EntityFrameworkCore;
-using WebAPI.Filters;
-using WebAPI.Middlewares;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using WebAPI.Filters;
+using WebAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +84,12 @@ using (var scope = app.Services.CreateScope())
     {
         throw new InvalidOperationException("Cannot connect to database. Check connection string and database availability.");
     }
+}
+
+//Seeding roles
+using (var scope = app.Services.CreateScope())
+{
+    await IdentitySeed.SeedRolesAsync(scope.ServiceProvider);
 }
 
 app.UseMiddleware<LoggingMiddleware>();
