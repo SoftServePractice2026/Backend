@@ -110,7 +110,14 @@ public class MovieRepository : IMovieRepository
     {
         var query = _dbContext.Movies
             .Include(m => m.Genres)
+            .Include(x => x.ActorsInMovies)
             .AsQueryable();
+
+        if (movieFilter.ActorsIds != null && movieFilter.ActorsIds.Any())
+        {
+            query = query.Where(m => m.ActorsInMovies.Any(g => movieFilter.ActorsIds.Contains(g.Id)));
+        }
+
 
         if (!string.IsNullOrEmpty(movieFilter.Title))
         {

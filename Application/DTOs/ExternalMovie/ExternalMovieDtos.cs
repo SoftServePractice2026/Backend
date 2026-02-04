@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 
 namespace Application.DTOs.ExternalMovieDto
 {
-    // Це "чиста" DTO, яку ти використовуєш у сервісі (залиш як є, або трохи спрости)
     public record ExternalMovieDto(
         int TmdbId,
         string Title,
@@ -15,8 +14,8 @@ namespace Application.DTOs.ExternalMovieDto
         string Language,
         decimal Rating,
         bool AgeRating,
-        List<string> Genres,       // Тут ми хочемо вже готові назви
-        List<ExternalActorDto> Cast, // Тут вже готові актори
+        List<string> Genres,      
+        List<ExternalActorDto> Cast, 
         DateTime ReleaseDate
     );
 
@@ -26,7 +25,6 @@ namespace Application.DTOs.ExternalMovieDto
         string PhotoUrl
     );
 
-    // --- А ЦЕ НОВІ КЛАСИ ДЛЯ ЗЧИТУВАННЯ ВІДПОВІДІ TMDB ---
 
     public class TmdbMovieResponse
     {
@@ -37,13 +35,13 @@ namespace Application.DTOs.ExternalMovieDto
         public string Title { get; set; }
 
         [JsonPropertyName("overview")]
-        public string Overview { get; set; } // Це Description
+        public string Overview { get; set; } 
 
         [JsonPropertyName("poster_path")]
         public string PosterPath { get; set; }
 
         [JsonPropertyName("runtime")]
-        public int? Runtime { get; set; } // TMDB іноді повертає null
+        public int? Runtime { get; set; } 
 
         [JsonPropertyName("original_language")]
         public string Language { get; set; }
@@ -55,7 +53,7 @@ namespace Application.DTOs.ExternalMovieDto
         public bool IsAdult { get; set; }
 
         [JsonPropertyName("release_date")]
-        public string ReleaseDateString { get; set; } // Краще читати як строку, бо може бути пусто
+        public string ReleaseDateString { get; set; } 
 
         [JsonPropertyName("genres")]
         public List<TmdbGenre> Genres { get; set; }
@@ -82,10 +80,10 @@ namespace Application.DTOs.ExternalMovieDto
         public int Id { get; set; }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; } // TMDB використовує "name", а не "FullName"
+        public string Name { get; set; } 
 
         [JsonPropertyName("profile_path")]
-        public string ProfilePath { get; set; } // TMDB використовує "profile_path"
+        public string ProfilePath { get; set; } 
     }
 
     public record ImportStatsDto(int Added, int Updated, int Failed, int Total);

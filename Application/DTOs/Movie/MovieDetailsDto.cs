@@ -9,4 +9,5 @@ public record MovieDetailsDto(
     decimal Rating,
     DateTime RentalStartDate,
     List<string> Actors,
-    List<string> Genres);
+    List<string> Genres
+    );
