@@ -1,5 +1,8 @@
 using Application.DTOs;
 using Application.Services.ViewHistory;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.ResponseExtensions;
@@ -20,6 +23,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ViewHistoryDetailsDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
         [HttpPost]
         public async Task<IActionResult> PostViewHistory([FromBody] ViewHistoryCreateDto dto, CancellationToken cancellationToken)
         {
@@ -36,6 +40,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ViewHistoryDetailsDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutViewHistory(Guid id, ViewHistoryUpdateDto dto, CancellationToken cancellationToken)
         {
@@ -51,6 +56,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteViewHistory(Guid id, CancellationToken cancellationToken)
         {
@@ -66,6 +72,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ViewHistoryListItemDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
         [HttpGet]
         public async Task<IActionResult> GetViewHistory([FromQuery] ViewHistoryFilterDto filterDto, CancellationToken cancellationToken)
         {
@@ -85,6 +92,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ViewHistoryDetailsDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetViewHistoryById(Guid id, CancellationToken cancellationToken)
         {

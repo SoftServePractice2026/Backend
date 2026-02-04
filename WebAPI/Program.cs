@@ -4,6 +4,8 @@ using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Filters;
 using WebAPI.Middlewares;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,10 +25,6 @@ services.AddScoped<ValidationFailureFilter>();
 //Add auto fluent validation on api controllers
 services.AddFluentValidationAutoValidation();
 
-services.AddOpenApi();
-
-
-
 //Add dependency from layers
 services
     .AddApplication()
@@ -34,11 +32,25 @@ services
 
 
 //Add swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddOpenApiDocument(opt =>
 {
-    c.SwaggerDoc("v1", new() { Title = "AbsoluteCinema API", Version = "v1" });
+    opt.AddSecurity("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Bearer token authorization header",
+        Type = OpenApiSecuritySchemeType.Http,
+        In = OpenApiSecurityApiKeyLocation.Header,
+        Name = "Authorization",
+        Scheme = "Bearer"
+    });
+
+    opt.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
+
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.SwaggerDoc("v1", new() { Title = "AbsoluteCinema API", Version = "v1" });
+//});
 
 services.AddControllers(options =>
 {
@@ -46,8 +58,21 @@ services.AddControllers(options =>
     options.Filters.Add<ValidationFailureFilter>();
 });
 
+services.AddCors(opt =>
+{
+    opt.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
+app.UseCors("FrontendPolicy");
 
 //Checking is runnig database
 using (var scope = app.Services.CreateScope())
@@ -64,14 +89,8 @@ app.UseMiddleware<LoggingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "AbsoluteCinema API V1");
-        c.RoutePrefix = string.Empty;
-    });
+    app.UseOpenApi();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

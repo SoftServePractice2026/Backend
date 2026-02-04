@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure;
 
-public class CinemaDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+public class CinemaDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 {
 
     public CinemaDbContext(DbContextOptions<CinemaDbContext> options) : base(options)
