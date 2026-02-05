@@ -34,6 +34,7 @@ services.AddHttpClient<IExternalMovieService, TMDBService>();
 
 services.AddScoped<IMovieImportService, MovieImportService>();
 
+services.AddScoped<Seeder>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
