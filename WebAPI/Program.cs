@@ -1,11 +1,12 @@
 using Application;
 using FluentValidation.AspNetCore;
 using Infrastructure;
+using Infrastructure.Seeders;
 using Microsoft.EntityFrameworkCore;
-using WebAPI.Filters;
-using WebAPI.Middlewares;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using WebAPI.Filters;
+using WebAPI.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,24 +47,19 @@ builder.Services.AddOpenApiDocument(opt =>
     opt.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
 
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new() { Title = "AbsoluteCinema API", Version = "v1" });
-//});
-
 services.AddControllers(options =>
 {
     //Add custom filter
     options.Filters.Add<ValidationFailureFilter>();
 });
 
+var frontendOrigins = builder.Configuration.GetSection("Cors").GetSection("AllowedOrigins").Get<string[]>();
 services.AddCors(opt =>
 {
     opt.AddPolicy("FrontendPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(frontendOrigins!)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
@@ -83,6 +79,12 @@ using (var scope = app.Services.CreateScope())
     {
         throw new InvalidOperationException("Cannot connect to database. Check connection string and database availability.");
     }
+}
+
+//Seeding roles
+using (var scope = app.Services.CreateScope())
+{
+    await IdentitySeed.SeedRolesAsync(scope.ServiceProvider);
 }
 
 app.UseMiddleware<LoggingMiddleware>();
