@@ -1,6 +1,9 @@
 using Application.Dtos.Movie;
 using Application.Services.Movie.MovieService;
+using Domain.Constants;
 using Domain.Filters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.ResponseExtensions;
@@ -20,52 +23,56 @@ public class MovieController : BaseController
 
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MovieDetailsDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpPost]
     public async Task<IActionResult> PostMovie(
         [FromBody] CreateMovieDto request,
         CancellationToken cancellationToken)
     {
         var result = await _movieService.CreateMovieAsync(request, cancellationToken);
-        
+
         return result.IsFailure ? result.Error.ToResponse() : Ok(result.Value);
     }
 
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<GetMovieByIdDto>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetMovieById(
         Guid id,
         CancellationToken cancellationToken)
     {
         var request = new GetMovieByIdDto(id);
-        
+
         var result = await _movieService.GetMovieByIdAsync(request, cancellationToken);
-        
-        return result.IsFailure 
+
+        return result.IsFailure
             ? result.Error.ToResponse()
             : Ok(result.Value);
     }
-    
+
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MovieDetailsDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
     [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpPut]
     public async Task<IActionResult> PutMovie(
         [FromBody] UpdateMovieDto request,
         CancellationToken cancellationToken)
     {
         var result = await _movieService.UpdateMovieAsync(request, cancellationToken);
-        
-        return result.IsFailure 
+
+        return result.IsFailure
             ? result.Error.ToResponse()
             : Ok(result.Value);
     }
 
-    
+
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteMovie(
         Guid id,
@@ -74,23 +81,23 @@ public class MovieController : BaseController
 
         var request = new DeleteMovieDto(id);
         var result = await _movieService.DeleteMovieAsync(request, cancellationToken);
-        
-        return result.IsFailure 
+
+        return result.IsFailure
             ? result.Error.ToResponse()
             : Ok(result.Value);
     }
 
 
-    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<MovieListItemDto>))]
-
+    [AllowAnonymous]
+    [HttpGet]
     public async Task<IActionResult> GetMovies([FromQuery] MovieFilterDto filter, CancellationToken cancellationToken)
     {
         var result = await _movieService.GetFilteredMoviesAsync(filter, cancellationToken);
 
         if (result.IsFailure)
         {
-            return  result.Error.ToResponse();
+            return result.Error.ToResponse();
         }
 
         Response.Headers.Append("X-Total-Count", result.Value.TotalCount.ToString());
@@ -103,17 +110,19 @@ public class MovieController : BaseController
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MovieDetailsDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ValidationProblemDetails))]
-[HttpPost("actors")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
+    [HttpPost("actors")]
     public async Task<IActionResult> AddActorsToMovie([FromBody] AddActorsToMovieDto request, CancellationToken cancellationToken)
     {
         var result = await _movieService.AddActorsToMovieAsync(request, cancellationToken);
 
         return result.IsSuccess ? Ok(result.Value) : result.Error.ToResponse();
     }
-    
+
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MovieDetailsDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ValidationProblemDetails))]
-[HttpPost("genres")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
+    [HttpPost("genres")]
     public async Task<IActionResult> AddGenresToMovie([FromBody] AddGenresToMovieDto request,
         CancellationToken cancellationToken)
     {
@@ -124,15 +133,16 @@ public class MovieController : BaseController
             : result.Error.ToResponse();
     }
 
-    
+
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpDelete("actors")]
     public async Task<IActionResult> DeleteActorsFromMovie([FromBody] DeleteActorsFromMovieDto request,
         CancellationToken cancellationToken)
     {
         var result = await _movieService.DeleteActorsFromMovieAsync(request, cancellationToken);
-        
+
         return result.IsFailure
             ? result.Error.ToResponse()
             : Ok(result.Value);
@@ -140,6 +150,7 @@ public class MovieController : BaseController
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpDelete("genres")]
     public async Task<IActionResult> DeleteGenresFromMovie([FromBody] DeleteGenresFromMovieDto request,
         CancellationToken cancellationToken)

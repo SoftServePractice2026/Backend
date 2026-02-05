@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Application.DTOs.ExternalMovieDto
 {
@@ -14,8 +11,8 @@ namespace Application.DTOs.ExternalMovieDto
         string Language,
         decimal Rating,
         bool AgeRating,
-        List<string> Genres,      
-        List<ExternalActorDto> Cast, 
+        List<string> Genres,
+        List<ExternalActorDto> Cast,
         DateTime ReleaseDate
     );
 
@@ -32,19 +29,19 @@ namespace Application.DTOs.ExternalMovieDto
         public int Id { get; set; }
 
         [JsonPropertyName("title")]
-        public string Title { get; set; }
+        public string Title { get; set; } = null!;
 
         [JsonPropertyName("overview")]
-        public string Overview { get; set; } 
+        public string Overview { get; set; } = null!;
 
         [JsonPropertyName("poster_path")]
-        public string PosterPath { get; set; }
+        public string PosterPath { get; set; } = null!;
 
         [JsonPropertyName("runtime")]
-        public int? Runtime { get; set; } 
+        public int? Runtime { get; set; }
 
         [JsonPropertyName("original_language")]
-        public string Language { get; set; }
+        public string Language { get; set; } = null!;
 
         [JsonPropertyName("vote_average")]
         public decimal VoteAverage { get; set; }
@@ -53,25 +50,25 @@ namespace Application.DTOs.ExternalMovieDto
         public bool IsAdult { get; set; }
 
         [JsonPropertyName("release_date")]
-        public string ReleaseDateString { get; set; } 
+        public string ReleaseDateString { get; set; } = null!;
 
         [JsonPropertyName("genres")]
-        public List<TmdbGenre> Genres { get; set; }
+        public List<TmdbGenre> Genres { get; set; } = new List<TmdbGenre>();
 
         [JsonPropertyName("credits")]
-        public TmdbCredits Credits { get; set; }
+        public TmdbCredits Credits { get; set; } = default!;
     }
 
     public class TmdbGenre
     {
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
     }
 
     public class TmdbCredits
     {
         [JsonPropertyName("cast")]
-        public List<TmdbCastItem> Cast { get; set; }
+        public List<TmdbCastItem> Cast { get; set; } = new List<TmdbCastItem>();
     }
 
     public class TmdbCastItem
@@ -80,10 +77,10 @@ namespace Application.DTOs.ExternalMovieDto
         public int Id { get; set; }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; } 
+        public string Name { get; set; } = null!;
 
         [JsonPropertyName("profile_path")]
-        public string ProfilePath { get; set; } 
+        public string? ProfilePath { get; set; }
     }
 
     public record ImportStatsDto(int Added, int Updated, int Failed, int Total);

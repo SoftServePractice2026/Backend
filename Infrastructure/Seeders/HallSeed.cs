@@ -1,18 +1,13 @@
 ﻿using Domain.Entities;
 using Domain.Entities.Enums;
-using Infrastructure.EntitiesConfiguration;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 
-namespace Infrastructure.Seeder
+namespace Infrastructure.Seeders
 {
-    public class Seeder
+    public class HallSeed
     {
         private readonly CinemaDbContext _context;
 
-        public Seeder(CinemaDbContext context)
+        public HallSeed(CinemaDbContext context)
         {
             _context = context;
         }

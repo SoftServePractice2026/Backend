@@ -2,6 +2,9 @@
 using Application.DTOs.Actor;
 using Application.Services.Actor;
 using Application.Services.Hall;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.Mappers;
@@ -22,6 +25,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ActorDetailsDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpPost]
         public async Task<IActionResult> PostActor([FromBody] ActorCreateDto dto, CancellationToken cancellationToken)
         {
@@ -39,6 +43,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
         [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutActor(Guid id, ActorUpdateDto dto, CancellationToken cancellation)
         {
@@ -54,6 +59,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteActor(Guid id, CancellationToken cancellationToken)
         {
@@ -68,6 +74,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ActorListItemDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetActor([FromQuery] ActorFilterDto actorFilterDto, CancellationToken cancellationToken)
         {
@@ -87,6 +94,7 @@ namespace WebAPI.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ActorDetailsDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetActorById(Guid id, CancellationToken cancellationToken)
         {

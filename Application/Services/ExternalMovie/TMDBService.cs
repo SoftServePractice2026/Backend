@@ -18,7 +18,7 @@ namespace Application.Services.ExternalMovie
         {
             _httpClient = httpClient;
             _httpClient.BaseAddress = new Uri(configuration["Tmdb:BaseUrl"] ?? "https://api.themoviedb.org/3/");
-            _apiKey = configuration["Tmdb:ApiKey"];
+            _apiKey = configuration["Tmdb:ApiKey"]!;
         }
 
         public async Task<ExternalMovieDto?> GetMovieAsync(int tmdbId)
@@ -39,7 +39,7 @@ namespace Application.Services.ExternalMovie
                     TmdbId: tmdbResponse.Id,
                     Title: tmdbResponse.Title ?? "No Title",
                     Description: tmdbResponse.Overview ?? "",
-                    Poster: !string.IsNullOrEmpty(tmdbResponse.PosterPath) ? _imageBaseUrl + tmdbResponse.PosterPath : null,
+                    Poster: !string.IsNullOrEmpty(tmdbResponse.PosterPath) ? _imageBaseUrl + tmdbResponse.PosterPath : null!,
                     Duration: tmdbResponse.Runtime ?? 0,
                     Language: tmdbResponse.Language ?? "en",
                     Rating: tmdbResponse.VoteAverage,
@@ -50,7 +50,7 @@ namespace Application.Services.ExternalMovie
                     Cast: tmdbResponse.Credits?.Cast?.Take(10).Select(c => new ExternalActorDto(
                         TmdbId: c.Id,
                         FullName: c.Name,
-                        PhotoUrl: !string.IsNullOrEmpty(c.ProfilePath) ? _imageBaseUrl + c.ProfilePath : null
+                        PhotoUrl: !string.IsNullOrEmpty(c.ProfilePath) ? _imageBaseUrl + c.ProfilePath : null!
                     )).ToList() ?? new List<ExternalActorDto>(),
 
                     ReleaseDate: releaseDate

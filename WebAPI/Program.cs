@@ -4,8 +4,10 @@ using Application.Services;
 using Application.Services.ExternalMovie;
 using FluentValidation.AspNetCore;
 using Infrastructure;
-using Infrastructure.Seeder;
+using Infrastructure.Seeders;
 using Microsoft.EntityFrameworkCore;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using WebAPI.Filters;
 using WebAPI.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +25,7 @@ services.AddScoped<ValidationFailureFilter>();
 
 services.AddFluentValidationAutoValidation();
 
-services.AddOpenApi();
-
+//Add dependency from layers
 services
     .AddApplication()
     .AddInfrastructure(services, builder.Configuration);
@@ -34,12 +35,19 @@ services.AddHttpClient<IExternalMovieService, TMDBService>();
 
 services.AddScoped<IMovieImportService, MovieImportService>();
 
-services.AddScoped<Seeder>();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+//Add swagger
+builder.Services.AddOpenApiDocument(opt =>
 {
-    c.SwaggerDoc("v1", new() { Title = "AbsoluteCinema API", Version = "v1" });
+    opt.AddSecurity("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Bearer token authorization header",
+        Type = OpenApiSecuritySchemeType.Http,
+        In = OpenApiSecurityApiKeyLocation.Header,
+        Name = "Authorization",
+        Scheme = "Bearer"
+    });
+
+    opt.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
 
 services.AddControllers(options =>
@@ -47,8 +55,22 @@ services.AddControllers(options =>
     options.Filters.Add<ValidationFailureFilter>();
 });
 
+var frontendOrigins = builder.Configuration.GetSection("Cors").GetSection("AllowedOrigins").Get<string[]>();
+services.AddCors(opt =>
+{
+    opt.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+            .WithOrigins(frontendOrigins!)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
+app.UseCors("FrontendPolicy");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -61,7 +83,7 @@ using (var scope = app.Services.CreateScope())
     }
     try
     {
-        var seeder = serviceProvider.GetRequiredService<Seeder>();
+        var seeder = serviceProvider.GetRequiredService<HallSeed>();
         await seeder.Seed();
     }
     catch (Exception ex)
@@ -71,18 +93,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+//Seeding roles
+using (var scope = app.Services.CreateScope())
+{
+    await IdentitySeed.SeedRolesAsync(scope.ServiceProvider);
+}
+
 app.UseMiddleware<LoggingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "AbsoluteCinema API V1");
-        c.RoutePrefix = string.Empty;
-    });
+    app.UseOpenApi();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

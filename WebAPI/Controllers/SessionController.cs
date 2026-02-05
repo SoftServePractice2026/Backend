@@ -1,5 +1,8 @@
 ﻿using Application.DTOs;
 using Application.Services.Session;
+using Domain.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.ResponseExtensions;
@@ -20,6 +23,7 @@ public class SessionController : BaseController
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(Guid))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] SessionCreateDto dto, CancellationToken cancellationToken)
     {
@@ -32,6 +36,7 @@ public class SessionController : BaseController
     }
     
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<SessionListItemDto>))]
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] SessionFilterDto filter, CancellationToken cancellationToken)
     {
@@ -49,6 +54,7 @@ public class SessionController : BaseController
     
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SessionListItemDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
@@ -63,6 +69,7 @@ public class SessionController : BaseController
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SessionListItemDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Failure))]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] SessionUpdateDto dto, CancellationToken cancellationToken)
     {
@@ -75,6 +82,7 @@ public class SessionController : BaseController
     }
 
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.AdminPolicy)]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

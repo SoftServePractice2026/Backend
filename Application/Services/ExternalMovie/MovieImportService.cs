@@ -3,9 +3,6 @@ using Application.Services.Movie.MovieRepository;
 using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Services.ExternalMovie
 {
@@ -61,7 +58,7 @@ namespace Application.Services.ExternalMovie
                         if (status == ImportStatus.Added) added++;
                         else if (status == ImportStatus.Updated) updated++;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         failed++;
                     }
