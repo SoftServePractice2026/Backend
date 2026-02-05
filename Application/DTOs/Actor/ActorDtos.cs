@@ -24,7 +24,8 @@ namespace Application.DTOs.Actor
     public record ActorListItemDto(
         Guid Id,
         string FirstName,
-        string LastName
+        string LastName,
+        string Photo
         );
 
     public record ActorFilterDto(

@@ -164,9 +164,9 @@ namespace Application.Services.ExternalMovie
             return ImportStatus.Added;
 
         }
-        private int ParseAgeRating(bool isAdult)
+        private static int ParseAgeRating(bool isAdult)
         {
-            return isAdult ? 18 : 0; 
+            return isAdult ? 18 : 12; 
         }
     }
 }
