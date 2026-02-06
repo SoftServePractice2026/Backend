@@ -14,6 +14,7 @@ namespace Domain.Interfaces
         Task<ActorEntity?> GetActorByIdAsync(Guid actorId, CancellationToken cancellationToken);
         Task<List<ActorEntity>> GetFilteredActorsAsync(ActorFilter actorFilter, CancellationToken cancellationToken);
         Task<int> CountFilteredAsync(ActorFilter actorFilter, CancellationToken cancellationToken);
+        Task<ActorEntity?> GetByTmdbIdAsync(int tmdbId);
 
     }
 }

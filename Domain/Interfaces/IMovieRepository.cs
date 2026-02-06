@@ -27,6 +27,6 @@ public interface IMovieRepository
     Task<List<MovieEntity>> GetFilteredMoviesAsync(MovieFilter movieFilter, CancellationToken cancellationToken);
     
     Task<int> CountFilteredAsync(MovieFilter movieFilter, CancellationToken cancellationToken);
-    
-    
+
+    Task<MovieEntity?> GetByTmdbIdAsync(int tmdbId);
 }

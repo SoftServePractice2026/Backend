@@ -18,7 +18,9 @@ namespace Infrastructure.Migrations
                 {
                     actor_id = table.Column<Guid>(type: "uuid", nullable: false),
                     first_name = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
-                    last_name = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false)
+                    last_name = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
+                    TmdbId = table.Column<int>(type: "integer", nullable: false),
+                    Photo = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -109,6 +111,7 @@ namespace Infrastructure.Migrations
                     rating = table.Column<decimal>(type: "numeric", nullable: true),
                     start_of_rental = table.Column<DateTime>(type: "date", nullable: false),
                     end_of_rental = table.Column<DateTime>(type: "date", nullable: false),
+                    TmdbId = table.Column<int>(type: "integer", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "timezone('utc', now())"),
                     last_modified_at = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },

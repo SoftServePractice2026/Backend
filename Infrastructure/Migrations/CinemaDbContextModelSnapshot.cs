@@ -41,6 +41,12 @@ namespace Infrastructure.Migrations
                         .HasColumnType("character varying(40)")
                         .HasColumnName("last_name");
 
+                    b.Property<string>("Photo")
+                        .HasColumnType("text");
+
+                    b.Property<int>("TmdbId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("actor", (string)null);
@@ -204,6 +210,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("title");
+
+                    b.Property<int?>("TmdbId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
