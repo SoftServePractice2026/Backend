@@ -19,7 +19,8 @@ namespace Application.DTOs.ExternalMovieDto
     public record ExternalActorDto(
         int TmdbId,
         string FullName,
-        string PhotoUrl
+        string PhotoUrl,
+        string Character
     );
 
 
@@ -81,6 +82,9 @@ namespace Application.DTOs.ExternalMovieDto
 
         [JsonPropertyName("profile_path")]
         public string? ProfilePath { get; set; }
+
+        [JsonPropertyName("character")]
+        public string? Character { get; set; }
     }
 
     public record ImportStatsDto(int Added, int Updated, int Failed, int Total);

@@ -42,7 +42,6 @@ namespace Infrastructure.Migrations
                         .HasColumnName("last_name");
 
                     b.Property<string>("Photo")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("TmdbId")

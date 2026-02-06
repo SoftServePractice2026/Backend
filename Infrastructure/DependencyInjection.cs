@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Domain.Constants;
+using Infrastructure.Seeders;
 
 namespace Infrastructure;
 
@@ -108,6 +109,8 @@ public static class DependencyInjection
         services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped<HallSeed>();
 
         return services;
     }

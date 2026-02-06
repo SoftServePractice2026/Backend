@@ -12,7 +12,7 @@ namespace Infrastructure.Seeders
             _context = context;
         }
 
-        public async Task Seed()
+        public async Task SeedHallsAndSeatsAsync()
         {
             if (!_context.Halls.Any())
             {

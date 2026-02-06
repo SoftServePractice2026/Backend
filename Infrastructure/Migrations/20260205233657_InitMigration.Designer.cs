@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CinemaDbContext))]
-    [Migration("20260201155724_InitMigration")]
+    [Migration("20260205233657_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -43,6 +43,12 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)")
                         .HasColumnName("last_name");
+
+                    b.Property<string>("Photo")
+                        .HasColumnType("text");
+
+                    b.Property<int>("TmdbId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -207,6 +213,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("title");
+
+                    b.Property<int?>("TmdbId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

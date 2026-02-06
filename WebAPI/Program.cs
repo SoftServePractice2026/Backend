@@ -22,7 +22,6 @@ builder.Configuration
 var services = builder.Services;
 
 services.AddScoped<ValidationFailureFilter>();
-
 services.AddFluentValidationAutoValidation();
 
 //Add dependency from layers
@@ -30,10 +29,7 @@ services
     .AddApplication()
     .AddInfrastructure(services, builder.Configuration);
 
-
 services.AddHttpClient<IExternalMovieService, TMDBService>();
-
-services.AddScoped<IMovieImportService, MovieImportService>();
 
 //Add swagger
 builder.Services.AddOpenApiDocument(opt =>
@@ -81,22 +77,21 @@ using (var scope = app.Services.CreateScope())
     {
         throw new InvalidOperationException("Cannot connect to database. Check connection string and database availability.");
     }
+
     try
     {
+        //Domain seed
         var seeder = serviceProvider.GetRequiredService<HallSeed>();
-        await seeder.Seed();
+        await seeder.SeedHallsAndSeatsAsync();
+
+        //Identity seed
+        await IdentitySeed.SeedRolesAsync(scope.ServiceProvider);
     }
     catch (Exception ex)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
-}
-
-//Seeding roles
-using (var scope = app.Services.CreateScope())
-{
-    await IdentitySeed.SeedRolesAsync(scope.ServiceProvider);
 }
 
 app.UseMiddleware<LoggingMiddleware>();

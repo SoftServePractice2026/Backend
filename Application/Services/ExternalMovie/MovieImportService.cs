@@ -147,7 +147,8 @@ namespace Application.Services.ExternalMovie
                         MovieId = newMovie.Id,
                         Movie = newMovie,
                         ActorId = actor.Id,
-                        Actor = actor
+                        Actor = actor,
+                        CharacterName = castDto.Character
                     };
 
                     newMovie.ActorsInMovies.Add(movieActor);

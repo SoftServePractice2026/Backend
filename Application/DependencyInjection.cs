@@ -39,6 +39,8 @@ public static class DependencyInjection
         services.AddScoped<ISeatService, SeatService>();
         services.AddScoped<IExternalMovieService, TMDBService>();
         services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IMovieImportService, MovieImportService>();
+
         return services;
     }
 }

@@ -1,10 +1,6 @@
 ﻿using Application.DTOs.ExternalMovieDto;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Application.Services.ExternalMovie
 {
@@ -50,7 +46,8 @@ namespace Application.Services.ExternalMovie
                     Cast: tmdbResponse.Credits?.Cast?.Take(10).Select(c => new ExternalActorDto(
                         TmdbId: c.Id,
                         FullName: c.Name,
-                        PhotoUrl: !string.IsNullOrEmpty(c.ProfilePath) ? _imageBaseUrl + c.ProfilePath : null!
+                        PhotoUrl: !string.IsNullOrEmpty(c.ProfilePath) ? _imageBaseUrl + c.ProfilePath : null!,
+                        Character: c.Character!
                     )).ToList() ?? new List<ExternalActorDto>(),
 
                     ReleaseDate: releaseDate
