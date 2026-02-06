@@ -25,7 +25,10 @@ namespace Application.Validators.Emails
 
             RuleFor(n => n.Email)
                 .NotEmpty().WithMessage("Email must not be empty")
-                .EmailAddress();
+                .WithErrorCode("email.empty")
+                .EmailAddress()
+                .WithMessage("Invalid email adress");
+                
         }
     }
 }

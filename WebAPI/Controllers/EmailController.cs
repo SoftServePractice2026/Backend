@@ -17,9 +17,8 @@ namespace WebAPI.Controllers
             _emailService = emailService;
         }
 
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ContactMessageDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ContactMessageDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-        [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(Failure))]
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] ContactMessageDto dto, CancellationToken ct)
         {
@@ -30,7 +29,7 @@ namespace WebAPI.Controllers
                 return result.Failure!.ToResponse();
             }
 
-            return NoContent();
+            return Ok(new { message = "Повідомлення успішно відправлено!"});
         }
     }
 }
