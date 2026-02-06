@@ -24,8 +24,7 @@ namespace Infrastructure.EntitiesConfiguration
                 .IsRequired();
 
             builder.Property(ma => ma.CharacterName)
-                .HasColumnName("character_name")
-                .HasMaxLength(50);
+                .HasColumnName("character_name");
 
             builder.HasIndex(ma => new { ma.MovieId, ma.ActorId })
                 .IsUnique();
