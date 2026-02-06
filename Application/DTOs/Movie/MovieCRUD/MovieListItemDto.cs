@@ -7,4 +7,9 @@ public record MovieListItemDto(
     decimal Rating,
     string Poster,
     string Title,
-    List<Guid> GenreIds);
+    List<Guid> GenreIds,
+    List<Guid> ActorsIds,
+    DateTime RentalStart,
+    DateTime RentalEnd,
+    string Description
+    );

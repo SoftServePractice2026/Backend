@@ -2,6 +2,7 @@ using Application.Dtos.Movie;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Filters;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Application.Mappers.MovieMapper;
 
@@ -39,7 +40,13 @@ public class MovieMapperProfile : Profile
                 src.Rating ?? 0m,
                 src.Poster ?? string.Empty,
                 src.Title,
-                src.Genres.Select(g => g.Id).ToList()));
+                src.Genres.Select(g => g.Id).ToList(),
+                src.ActorsInMovies.Select(a => a.ActorId).ToList(),
+                src.RentalStartDate,
+                src.RentalEndDate,
+                src.Description
+                ));
+                
         
         CreateMap<MovieFilter, MovieFilterDto>();
         CreateMap<MovieFilterDto, MovieFilter>();

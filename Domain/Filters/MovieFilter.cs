@@ -6,6 +6,7 @@ public class MovieFilter
 {
     public string? Title { get; init; }
     public List<Guid>? GenreIds { get; init; }
+    public List<Guid>? ActorsIds { get; init; }
     public int? MinAgeRating { get; init; }
     
     
