@@ -163,4 +163,40 @@ public class IdentityService : IIdentityService
             )
         );
     }
+
+    public async Task<Result<IdentityDetailsDto>> UpdateUserAsync(Guid userId, UpdateUserDto request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user == null)
+        {
+            return Result<IdentityDetailsDto>.Fail(Error.NotFound("user.not.found", $"User with id: {userId} not found"));
+        }
+
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.BirthDate = request.BirthDate;
+        user.PhoneNumber = request.PhoneNumber;
+        
+        var result = await _userManager.UpdateAsync(user);
+        
+        if (!result.Succeeded)
+        {
+            return Result<IdentityDetailsDto>.Fail(Error.Validation(
+                "user.update.failed", 
+                "User update failed"));
+        }
+        
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Result<IdentityDetailsDto>.Success(
+            new IdentityDetailsDto(
+                user.Id,
+                user.FirstName,
+                user.LastName,
+                user.Email!,
+                user.BirthDate,
+                roles
+            ));
+    }
 }

@@ -41,10 +41,39 @@ public class IdentityControllers : BaseController
     {
         var result = await _identityService.LoginAsync(request, cancellationToken);
 
+        if (result.IsSuccess)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Expires = result.Value.ExpiryDate,
+                Path = "/"
+            };
+
+            Response.Cookies.Append("access_token", result.Value.Token, cookieOptions);
+            return Ok(result.Value);
+        }
+
+        return BadRequest(result.Failure);
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateMyProfile(
+        [FromBody] UpdateUserDto request,
+        CancellationToken cancellationToken)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        
+        var result = await _identityService.UpdateUserAsync(userId, request, cancellationToken);
+
         return result.IsFailure
             ? result.Failure!.ToResponse()
             : Ok(result.Value);
     }
+    
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
     [HttpPost("logout")]

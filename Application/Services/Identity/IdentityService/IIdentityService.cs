@@ -12,4 +12,7 @@ public interface IIdentityService
     Task LogoutAsync();
     Task<Result<AuthResponse>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
     Task<Result<IdentityDetailsDto>> GetCurrentUserAsync(ClaimsPrincipal user);
+
+
+    Task<Result<IdentityDetailsDto>> UpdateUserAsync(Guid UserId, UpdateUserDto request, CancellationToken cancellationToken);
 }
