@@ -13,6 +13,7 @@ using Application.Validators.Halls;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Application.Services.Email;
+using Application.Services.ExternalMovie;
 
 namespace Application;
 
