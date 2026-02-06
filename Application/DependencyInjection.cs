@@ -12,7 +12,7 @@ using Application.Services.Seat;
 using Application.Validators.Halls;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Application.Services.ExternalMovie;
+using Application.Services.Email;
 
 namespace Application;
 
@@ -39,8 +39,7 @@ public static class DependencyInjection
         services.AddScoped<ISeatService, SeatService>();
         services.AddScoped<IExternalMovieService, TMDBService>();
         services.AddScoped<ISessionService, SessionService>();
-        services.AddScoped<IMovieImportService, MovieImportService>();
-
+        services.AddScoped<IEmailService, EmailService>();
         return services;
     }
 }
