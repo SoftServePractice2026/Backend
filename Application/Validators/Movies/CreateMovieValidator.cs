@@ -44,6 +44,15 @@ public class CreateMovieValidator : AbstractValidator<CreateMovieDto>
             .GreaterThan(m => m.RentalStartDate)
             .WithMessage("Movie rental end date is required");
 
+        RuleFor(m => m.Year)
+            .GreaterThan(1888)
+            .When(m => m.Year.HasValue)
+            .WithMessage("Year must be a valid year");
+
+        RuleFor(m => m.Formats)
+            .Must(f => f == null || f.All(s => !string.IsNullOrWhiteSpace(s)))
+            .WithMessage("Formats must not contain empty values");
+
         RuleFor(m => m.GenreIds)
             .NotEmpty()
             .WithMessage("Movie must have at least one genre")
