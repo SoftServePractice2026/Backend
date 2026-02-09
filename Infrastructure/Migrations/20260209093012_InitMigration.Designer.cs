@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CinemaDbContext))]
-    [Migration("20260205233657_InitMigration")]
+    [Migration("20260209093012_InitMigration")]
     partial class InitMigration
     {
         /// <inheritdoc />
@@ -140,8 +140,7 @@ namespace Infrastructure.Migrations
                         .HasColumnName("actor_id");
 
                     b.Property<string>("CharacterName")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("text")
                         .HasColumnName("character_name");
 
                     b.Property<Guid>("MovieId")
@@ -215,7 +214,8 @@ namespace Infrastructure.Migrations
                         .HasColumnName("title");
 
                     b.Property<int?>("TmdbId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tmdb_id");
 
                     b.HasKey("Id");
 
