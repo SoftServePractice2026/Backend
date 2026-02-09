@@ -41,6 +41,12 @@ namespace Infrastructure.EntitiesConfiguration
             builder.Property(m => m.TmdbId)
                 .HasColumnName("tmdb_id");
 
+            builder.Property(m => m.Year)
+                .HasColumnName("year");
+
+            builder.Property(m => m.Formats)
+                .HasColumnName("formats");
+
             builder.Property(m => m.RentalStartDate)
                 .HasColumnName("start_of_rental")
                 .HasColumnType("date")
