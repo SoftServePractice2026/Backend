@@ -70,7 +70,8 @@ public static class DependencyInjection
                     ValidAudience = jwtOptions.Audience,
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+                    ClockSkew = TimeSpan.Zero,
                 };
 
                 options.Events = new JwtBearerEvents()

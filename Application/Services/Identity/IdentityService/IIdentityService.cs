@@ -8,8 +8,8 @@ namespace Application.Services.Identity;
 public interface IIdentityService
 {
     Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
-    Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
-    Task LogoutAsync();
+    Task<Result<IdentityDetailsDto>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
+    Task LogoutAsync(string refreshTokenValue);
     Task<Result<AuthResponse>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
     Task<Result<IdentityDetailsDto>> GetCurrentUserAsync(ClaimsPrincipal user);
 

@@ -27,7 +27,7 @@ public class IdentityControllers : BaseController
         CancellationToken cancellationToken)
     {
         var result = await _identityService.RegisterAsync(request, cancellationToken);
-        
+
         return result.IsFailure
             ? result.Failure!.ToResponse()
             : Ok(result.Value);
@@ -41,22 +41,33 @@ public class IdentityControllers : BaseController
     {
         var result = await _identityService.LoginAsync(request, cancellationToken);
 
-        if (result.IsSuccess)
+        if (result.IsFailure)
         {
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
-                Expires = result.Value.ExpiryDate,
-                Path = "/"
-            };
-
-            Response.Cookies.Append("access_token", result.Value.Token, cookieOptions);
-            return Ok(result.Value);
+            return BadRequest(result.Failure);
         }
 
-        return BadRequest(result.Failure);
+        //var cookieOptions = new CookieOptions
+        //{
+        //    HttpOnly = true,
+        //    Secure = false,
+        //    SameSite = SameSiteMode.Lax,
+        //    Expires = result.Value.ExpiryDate,
+        //    Path = "/"
+        //};
+
+        //Response.Cookies.Append("access_token", result.Value.Token, cookieOptions);
+
+        var cookieRefresh = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = result.Value!.ExpiryDateRefresh
+        };
+
+        Response.Cookies.Append("refreshToken", result.Value!.RefreshToken!, cookieRefresh);
+
+        return Ok(result.Value);
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
@@ -66,20 +77,24 @@ public class IdentityControllers : BaseController
         CancellationToken cancellationToken)
     {
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        
+
         var result = await _identityService.UpdateUserAsync(userId, request, cancellationToken);
 
         return result.IsFailure
             ? result.Failure!.ToResponse()
             : Ok(result.Value);
     }
-    
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Policy.UserPolicy)]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        await _identityService.LogoutAsync();
+        var refreshTokenValue = Request.Cookies["refreshToken"];
+
+        if (refreshTokenValue != null)
+        {
+            await _identityService.LogoutAsync(refreshTokenValue);
+            Response.Cookies.Delete("refreshToken");
+        }
 
         return Ok(new { message = "Logout successful" });
     }
@@ -92,6 +107,33 @@ public class IdentityControllers : BaseController
 
         if (!result.IsSuccess)
             return Unauthorized(result.Failure);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken(CancellationToken cancellationToken)
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (refreshToken == null)
+            return Unauthorized();
+
+        var result = await _identityService
+            .RefreshTokenAsync(refreshToken, cancellationToken);
+
+        if (result.IsFailure)
+            return Unauthorized(result.Failure);
+
+        var cookieRefresh = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = result.Value!.ExpiryDateRefresh
+        };
+
+        Response.Cookies.Append("refreshToken", result.Value!.RefreshToken!, cookieRefresh);
 
         return Ok(result.Value);
     }
