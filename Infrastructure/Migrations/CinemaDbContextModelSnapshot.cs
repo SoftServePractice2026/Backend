@@ -211,7 +211,8 @@ namespace Infrastructure.Migrations
                         .HasColumnName("title");
 
                     b.Property<int?>("TmdbId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("tmdb_id");
 
                     b.HasKey("Id");
 
