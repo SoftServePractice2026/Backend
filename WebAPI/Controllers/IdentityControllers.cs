@@ -46,23 +46,13 @@ public class IdentityControllers : BaseController
             return BadRequest(result.Failure);
         }
 
-        //var cookieOptions = new CookieOptions
-        //{
-        //    HttpOnly = true,
-        //    Secure = false,
-        //    SameSite = SameSiteMode.Lax,
-        //    Expires = result.Value.ExpiryDate,
-        //    Path = "/"
-        //};
-
-        //Response.Cookies.Append("access_token", result.Value.Token, cookieOptions);
-
         var cookieRefresh = new CookieOptions
         {
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = result.Value!.ExpiryDateRefresh
+            Expires = result.Value!.ExpiryDateRefresh,
+            Path = "/",
         };
 
         Response.Cookies.Append("refreshToken", result.Value!.RefreshToken!, cookieRefresh);
@@ -130,7 +120,8 @@ public class IdentityControllers : BaseController
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = result.Value!.ExpiryDateRefresh
+            Expires = result.Value!.ExpiryDateRefresh,
+            Path = "/",
         };
 
         Response.Cookies.Append("refreshToken", result.Value!.RefreshToken!, cookieRefresh);

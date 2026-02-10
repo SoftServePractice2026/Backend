@@ -126,13 +126,13 @@ public class IdentityService : IIdentityService
         var user = await _userManager.Users
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken, cancellationToken);
 
-        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        if (user == null)
         {
             return Result<AuthResponse>.Fail(Error.Unauthorized("Invalid token", "Invalid token."));
 
         }
 
-        if (user.RefreshToken == null || user.RefreshTokenExpiryTime > DateTime.Now)
+        if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {
             return Result<AuthResponse>.Fail(Error.Unauthorized("Invalid token", "Refresh token expired."));
         }
@@ -159,7 +159,7 @@ public class IdentityService : IIdentityService
             newJwtToken.token,
             DateTime.UtcNow.AddMinutes(newJwtToken.expiry),
             userDetails,
-            refreshToken,
+            newRefreshToken.token,
             refreshTokenExpiry);
 
         return Result<AuthResponse>.Success(response);
