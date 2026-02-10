@@ -27,6 +27,9 @@ namespace Application.Services.ExternalMovie
 
                 if (tmdbResponse == null) return null;
 
+                if (string.IsNullOrWhiteSpace(tmdbResponse.Overview))
+                    return null;
+
                 DateTime releaseDate;
                 DateTime.TryParse(tmdbResponse.ReleaseDateString, out releaseDate);
                 if (releaseDate == default) releaseDate = DateTime.UtcNow;
