@@ -18,8 +18,11 @@ public class MovieMapperProfile : Profile
                 src.Poster ?? string.Empty,
                 src.AgeRating,
                 src.Rating ?? 0m,
+                src.Duration,
+                src.Year,
+                src.Formats,
                 src.RentalStartDate,
-               src.ActorsInMovies.Select(a => $"{a.Actor.FirstName} {a.Actor.LastName}").ToList(),
+                src.ActorsInMovies.Select(a => $"{a.Actor.FirstName} {a.Actor.LastName}").ToList(),
                 src.Genres.Select(g => g.Name).ToList()
             ))
             .ForAllMembers(opt => opt.Ignore());

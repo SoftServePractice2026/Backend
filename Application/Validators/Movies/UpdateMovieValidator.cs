@@ -42,5 +42,14 @@ public class UpdateMovieValidator : AbstractValidator<UpdateMovieDto>
         RuleFor(m => m.Language)
             .NotEmpty()
             .WithMessage("Movie language is required");
+
+        RuleFor(m => m.Year)
+            .GreaterThan(1888)
+            .When(m => m.Year.HasValue)
+            .WithMessage("Year must be a valid year");
+
+        RuleFor(m => m.Formats)
+            .Must(f => f == null || f.All(s => !string.IsNullOrWhiteSpace(s)))
+            .WithMessage("Formats must not contain empty values");
     }
 }
