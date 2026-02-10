@@ -15,6 +15,9 @@ namespace Application.Services.ExternalMovie
 
     public class MovieImportService : IMovieImportService
     {
+        private static readonly List<string> AvailableFormats = ["2D", "3D", "IMAX", "4DX", "ScreenX"];
+        private static readonly Random Random = new();
+
         private readonly IExternalMovieService _externalMovieService;
         private readonly IMovieRepository _movieRepository;
         private readonly IActorRepository _actorRepository;
@@ -31,11 +34,11 @@ namespace Application.Services.ExternalMovie
 
         public async Task<ImportStatsDto> ImportFromTmdbAsync(int pagesCount, CancellationToken ct)
         {
-            int added = 0;
-            int updated = 0;
-            int failed = 0;
+            var added = 0;
+            var updated = 0;
+            var failed = 0;
 
-            for (int i = 1; i <= pagesCount; i++)
+            for (var i = 1; i <= pagesCount; i++)
             {
                 var movieIds = await _externalMovieService.GetPopularMovieIdsAsync(i);
 
@@ -65,7 +68,7 @@ namespace Application.Services.ExternalMovie
                 }
             }
 
-            int total = added + updated + failed;
+            var total = added + updated + failed;
             return new ImportStatsDto(added, updated, failed, total);
         }
 
@@ -98,6 +101,8 @@ namespace Application.Services.ExternalMovie
 
             newMovie.TmdbId = dto.TmdbId;
             newMovie.Rating = dto.Rating;
+            newMovie.Year = releaseDate.Year;
+            newMovie.Formats = GenerateRandomFormats();
 
             newMovie.Genres = new List<GenreEntity>();
             if (dto.Genres != null)
@@ -118,7 +123,7 @@ namespace Application.Services.ExternalMovie
                 }
             }
 
-            if (newMovie.ActorsInMovies == null) newMovie.ActorsInMovies = new List<MovieActorEntity>();
+            newMovie.ActorsInMovies ??= new List<MovieActorEntity>();
 
             if (dto.Cast != null)
             {
@@ -128,7 +133,7 @@ namespace Application.Services.ExternalMovie
 
                     if (actor == null)
                     {
-                        var names = castDto.FullName?.Split(' ') ?? new string[] { "Unknown" };
+                        var names = castDto.FullName?.Split(' ') ?? ["Unknown"];
                         var firstName = names[0];
                         var lastName = names.Length > 1 ? string.Join(" ", names.Skip(1)) : "";
 
@@ -157,14 +162,20 @@ namespace Application.Services.ExternalMovie
 
             _movieRepository.AddMovie(newMovie);
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync(ct);
 
             return ImportStatus.Added;
 
         }
+        private static List<string> GenerateRandomFormats()
+        {
+            var count = Random.Next(1, 4);
+            return AvailableFormats.OrderBy(_ => Random.Next()).Take(count).ToList();
+        }
+
         private static int ParseAgeRating(bool isAdult)
         {
-            return isAdult ? 18 : 12; 
+            return isAdult ? 18 : 12;
         }
     }
 }

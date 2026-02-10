@@ -39,6 +39,8 @@ namespace Domain.Entities
         public DateTime RentalStartDate { get; set; }
         public DateTime RentalEndDate { get; set; }
         public int? TmdbId { get; set; }
+        public int? Year { get; set; }
+        public List<string> Formats { get; set; } = [];
 
         public ICollection<GenreEntity> Genres { get; set; } = new List<GenreEntity>();
         public ICollection<MovieActorEntity> ActorsInMovies { get; set; } = new List<MovieActorEntity>();

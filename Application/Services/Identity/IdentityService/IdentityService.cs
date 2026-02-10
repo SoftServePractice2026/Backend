@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Shared;
 using System.Data;
 using System.Security.Claims;
+using Application.Services.Movie.MovieRepository;
+using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Application.Services.Identity.IdentityService;
 
@@ -18,13 +21,28 @@ public class IdentityService : IIdentityService
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IJwtProvider _jwtProvider;
     private readonly IMapper _mapper;
+    
+    private readonly IFavoriteMovieRepository _favoriteMovieRepository;
+    private readonly IMovieRepository _movieRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public IdentityService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IJwtProvider jwtProvider, IMapper mapper)
+    public IdentityService(
+        UserManager<ApplicationUser> userManager,
+        RoleManager<ApplicationRole> roleManager,
+        IJwtProvider jwtProvider,
+        IMapper mapper,
+        IFavoriteMovieRepository favoriteMovieRepository,
+        IMovieRepository movieRepository,
+        IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _jwtProvider = jwtProvider;
         _mapper = mapper;
+
+        _favoriteMovieRepository = favoriteMovieRepository;
+        _movieRepository = movieRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<IdentityDetailsDto>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
@@ -230,4 +248,95 @@ public class IdentityService : IIdentityService
                 roles
             ));
     }
+    
+    
+    public async Task<Result<List<FavoriteMovieResponse>>> GetMyFavoriteMoviesAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result<List<FavoriteMovieResponse>>.Fail(
+                Error.NotFound("user.not.found", $"User with id: {userId} not found")
+            );
+        }
+
+        var movieIds = await _favoriteMovieRepository.GetMovieIdsByUserAsync(userId, cancellationToken);
+
+        var response = movieIds.Select(movieId => new FavoriteMovieResponse
+        {
+            FavoriteId = Guid.Empty,
+            MovieId = movieId,
+            UserId = userId,
+            AddedAt = default
+        }).ToList();
+
+        return Result<List<FavoriteMovieResponse>>.Success(response);
+    }
+
+    public async Task<Result<FavoriteMovieResponse>> AddFavoriteMovieAsync(
+        Guid userId,
+        AddFavoriteMovieRequest request,
+        CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result<FavoriteMovieResponse>.Fail(
+                Error.NotFound("user.not.found", $"User with id: {userId} not found")
+            );
+        }
+
+        var movie = await _movieRepository.GetMovieByIdAsync(request.MovieId, cancellationToken);
+
+        if (movie is null)
+        {
+            return Result<FavoriteMovieResponse>.Fail(
+                Error.NotFound("movie.not.found", $"Movie with id: {request.MovieId} not found")
+            );
+        }
+
+        var alreadyExists = await _favoriteMovieRepository.ExistsAsync(userId, request.MovieId, cancellationToken);
+        if (alreadyExists)
+        {
+            return Result<FavoriteMovieResponse>.Fail(
+                Error.Conflict("favorite.already.exists", "Movie is already in favorites")
+            );
+        }
+
+        var entity = new FavoriteMovieEntity
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            MovieId = request.MovieId,
+            AddedAt = DateTime.Now
+        };
+
+        _favoriteMovieRepository.Add(entity);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        
+        return Result<FavoriteMovieResponse>.Success(new FavoriteMovieResponse
+        {
+            FavoriteId = entity.Id,
+            MovieId = entity.MovieId,
+            UserId = entity.UserId,
+            AddedAt = entity.AddedAt
+        });
+    }
+
+    
+    public async Task DeleteFavoriteMovieAsync(Guid userId, Guid movieId, CancellationToken cancellationToken)
+    {
+        var favorite = await _favoriteMovieRepository.GetByUserAndMovieAsync(userId, movieId, cancellationToken);
+        if (favorite is null)
+        {
+            return;
+        }
+        _favoriteMovieRepository.Remove(favorite);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+
 }

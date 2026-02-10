@@ -109,6 +109,7 @@ public static class DependencyInjection
         services.AddScoped<ISeatRepository, SeatRepository>();
         services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IFavoriteMovieRepository, FavoriteMovieRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<HallSeed>();
