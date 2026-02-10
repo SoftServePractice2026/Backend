@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Application.DTOs.Genre;
 using Application.Services.Genre;
 using AutoMapper;
@@ -6,122 +10,212 @@ using Domain.Filters;
 using Domain.Interfaces;
 using FluentAssertions;
 using Moq;
+using Shared;
 using Xunit;
 
 namespace SoftServePractice2026.Backend.Tests.Services
 {
     public class GenreServiceTests
     {
-        private readonly Mock<IGenreRepository> _repo = new();
+        private readonly Mock<IGenreRepository> _repository = new();
         private readonly Mock<IMapper> _mapper = new();
-        private readonly Mock<IUnitOfWork> _uow = new();
+        private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
         private GenreService CreateService()
             => new GenreService(
-                _repo.Object,
+                _repository.Object,
                 _mapper.Object,
-                _uow.Object
+                _unitOfWork.Object
             );
 
+
         [Fact]
-        public async Task CreateGenreAsync_ShouldCreateGenre_WhenNotExists()
+        public async Task CreateGenreAsync_ShouldCreate_WhenGenreDoesNotExist()
         {
-            var dto = new GenreCreateDto("Drama");
+            var dto = new GenreCreateDto("Action");
+            var entity = new GenreEntity { Id = Guid.NewGuid(), Name = "Action" };
+            var detailsDto = new GenreDetailsDto(entity.Id, entity.Name);
 
-            var entity = new GenreEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = "Drama"
-            };
-
-            var resultDto = new GenreDetailsDto(entity.Id, entity.Name);
-
-            _repo
+            _repository
                 .Setup(r => r.GetGenreByNameAsync(dto.Name, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((GenreEntity)null);
+                .ReturnsAsync((GenreEntity?)null);
 
             _mapper.Setup(m => m.Map<GenreEntity>(dto)).Returns(entity);
-            _mapper.Setup(m => m.Map<GenreDetailsDto>(entity)).Returns(resultDto);
+            _mapper.Setup(m => m.Map<GenreDetailsDto>(entity)).Returns(detailsDto);
 
             var service = CreateService();
 
-           
             var result = await service.CreateGenreAsync(dto, CancellationToken.None);
 
-          
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().Be(resultDto);
+            result.Value.Name.Should().Be("Action");
 
-            _repo.Verify(r => r.CreateGenre(entity), Times.Once);
-            _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _repository.Verify(r => r.CreateGenre(entity), Times.Once);
+            _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task CreateGenreAsync_ShouldFail_WhenGenreAlreadyExists()
         {
-            
-            var dto = new GenreCreateDto("Drama");
+            var dto = new GenreCreateDto("Action");
 
-            _repo
+            _repository
                 .Setup(r => r.GetGenreByNameAsync(dto.Name, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new GenreEntity());
+                .ReturnsAsync(new GenreEntity { Name = "Action" });
 
             var service = CreateService();
 
             var result = await service.CreateGenreAsync(dto, CancellationToken.None);
 
-            result.IsSuccess.Should().BeFalse();
-            _repo.Verify(r => r.CreateGenre(It.IsAny<GenreEntity>()), Times.Never);
+            result.IsFailure.Should().BeTrue();
+            result.Failure.Errors.Should()
+                .Contain(e => e.Code == "genre.exist");
         }
 
+
+
         [Fact]
-        public async Task GetGenreByIdAsync_ShouldReturnGenre_WhenExists()
+        public async Task DeleteGenreAsync_ShouldDelete_WhenGenreExists()
         {
             var id = Guid.NewGuid();
+            var entity = new GenreEntity { Id = id };
 
-            var entity = new GenreEntity
-            {
-                Id = id,
-                Name = "Action"
-            };
-
-            var dto = new GenreDetailsDto(id, "Action");
-
-            _repo
+            _repository
                 .Setup(r => r.GetGenreByIdAsync(id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(entity);
 
-            _mapper.Setup(m => m.Map<GenreDetailsDto>(entity)).Returns(dto);
-
             var service = CreateService();
 
-            var result = await service.GetGenreByIdAsync(id, CancellationToken.None);
+            var result = await service.DeleteGenreAsync(id, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.Should().Be(dto);
+            result.Value.Should().BeTrue();
+
+            _repository.Verify(r => r.DeleteGenre(entity), Times.Once);
+            _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteGenreAsync_ShouldDelete_WhenExists()
+        public async Task DeleteGenreAsync_ShouldFail_WhenGenreNotFound()
         {
-            var entity = new GenreEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = "Comedy"
-            };
+            var id = Guid.NewGuid();
 
-            _repo
-                .Setup(r => r.GetGenreByIdAsync(entity.Id, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(entity);
+            _repository
+                .Setup(r => r.GetGenreByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((GenreEntity?)null);
 
             var service = CreateService();
 
-            var result = await service.DeleteGenreAsync(entity.Id, CancellationToken.None);
+            var result = await service.DeleteGenreAsync(id, CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
+            result.Failure.Errors.Should()
+                .Contain(e => e.Code == "genre.not.found");
+        }
+
+
+        [Fact]
+        public async Task GetGenreAllAsync_ShouldReturnList_WhenGenresExist()
+        {
+            var filterDto = new GenreFilterDto(null, null);
+            var filter = new GenreFilter();
+            var entities = new List<GenreEntity>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Action" }
+            };
+
+            var listDtos = new List<GenreListItemDto>
+            {
+                new(entities[0].Id, "Action")
+            };
+
+            _mapper.Setup(m => m.Map<GenreFilter>(filterDto)).Returns(filter);
+            _repository
+                .Setup(r => r.GetAllGenresAsync(filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entities);
+
+            _mapper.Setup(m => m.Map<List<GenreListItemDto>>(entities)).Returns(listDtos);
+
+            var service = CreateService();
+
+            var result = await service.GetGenreAllAsync(filterDto, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
+            result.Value.Should().HaveCount(1);
+        }
 
-            _repo.Verify(r => r.DeleteGenre(entity), Times.Once);
-            _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        [Fact]
+        public async Task GetGenreAllAsync_ShouldFail_WhenNoGenresFound()
+        {
+            var filterDto = new GenreFilterDto(
+                Name: null,
+                OrderBy: null);
+
+            var filter = new GenreFilter();
+
+            _mapper
+                .Setup(m => m.Map<GenreFilter>(filterDto))
+                .Returns(filter);
+
+            _repository
+                .Setup(r => r.GetAllGenresAsync(filter, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<GenreEntity>());
+
+            var service = CreateService();
+
+            var result = await service.GetGenreAllAsync(filterDto, CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
+            result.Failure.Errors.Should()
+                .Contain(e => e.Code == "genres.not.found");
+        }
+  
+
+
+        [Fact]
+        public async Task UpdateGenreAsync_ShouldUpdate_WhenValid()
+        {
+            var id = Guid.NewGuid();
+            var dto = new GenreUpdateDto("Drama");
+            var entity = new GenreEntity { Id = id, Name = "Action" };
+
+            _repository
+                .Setup(r => r.GetGenreByIdAsync(id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(entity);
+
+            _repository
+                .Setup(r => r.GetGenreByNameAsync(dto.Name, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((GenreEntity?)null);
+
+            _mapper.Setup(m => m.Map(dto, entity));
+
+            _mapper.Setup(m => m.Map<GenreDetailsDto>(entity))
+                .Returns(new GenreDetailsDto(id, "Drama"));
+
+            var service = CreateService();
+
+            var result = await service.UpdateGenreAsync(id, dto, CancellationToken.None);
+
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Name.Should().Be("Drama");
+        }
+
+        [Fact]
+        public async Task UpdateGenreAsync_ShouldFail_WhenGenreNotFound()
+        {
+            var dto = new GenreUpdateDto("Drama");
+
+            _repository
+                .Setup(r => r.GetGenreByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((GenreEntity?)null);
+
+            var service = CreateService();
+
+            var result = await service.UpdateGenreAsync(Guid.NewGuid(), dto, CancellationToken.None);
+
+            result.IsFailure.Should().BeTrue();
+            result.Failure.Errors.Should()
+                .Contain(e => e.Code == "genre.not.found");
         }
     }
 }

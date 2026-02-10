@@ -4,12 +4,8 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Filters;
 using Domain.Interfaces;
-using Microsoft.Extensions.Logging;
 using Shared;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
+
 
 namespace Application.Services.Actor
 {

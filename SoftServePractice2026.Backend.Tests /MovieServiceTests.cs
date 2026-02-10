@@ -6,78 +6,189 @@ using Domain.Entities;
 using Domain.Interfaces;
 using FluentAssertions;
 using Moq;
-using Shared;
-using Xunit;
 
 namespace SoftServePractice2026.Backend.Tests.Services;
 
 public class MovieServiceTests
 {
-    private readonly Mock<IMovieRepository> _movieRepo = new();
-    private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IMovieRepository> _movieRepository = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IMapper> _mapper = new();
 
     private MovieService CreateService()
-        => new MovieService(_movieRepo.Object, _uow.Object, _mapper.Object);
+        => new MovieService(
+            _movieRepository.Object,
+            _unitOfWork.Object,
+            _mapper.Object
+        );
 
-    [Fact]
-    public async Task CreateMovieAsync_ShouldReturnSuccess_WhenMovieNotExists()
-    {
-        var request = new CreateMovieDto(
-            Title: "Interstellar",
-            Description: "Sci-fi",
+    private static CreateMovieDto CreateCreateDto()
+        => new CreateMovieDto(
+            Title: "Test movie",
+            Description: "Description",
             Poster: "poster.jpg",
-            AgeRating: 12,
             Language: "en",
-            Duration: 169,
+            AgeRating: 16,
+            Duration: 120,
             RentalStartDate: DateTime.UtcNow,
-            RentalEndDate: DateTime.UtcNow.AddDays(30),
+            RentalEndDate: DateTime.UtcNow.AddDays(7),
             GenreIds: new List<Guid>()
         );
 
-        _movieRepo
-            .Setup(r => r.GetMovieByNameAsync(request.Title, It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult<MovieEntity?>(null));
-
-        var movieEntity = MovieEntity.Create(
-            request.Poster,
-            request.Title,
-            request.Description,
-            request.AgeRating,
-            request.Language,
-            request.Duration,
-            request.RentalStartDate,
-            request.RentalEndDate
+    private static MovieEntity CreateMovieEntity()
+        => MovieEntity.Create(
+            poster: "poster.jpg",
+            title: "Test movie",
+            description: "Description",
+            ageRating: 16,
+            language: "en",
+            duration: 120,
+            start: DateTime.UtcNow,
+            end: DateTime.UtcNow.AddDays(7)
         );
 
-        _mapper
-            .Setup(m => m.Map<MovieEntity>(request))
-            .Returns(movieEntity);
-
-        var detailsDto = new MovieDetailsDto(
-            Guid.NewGuid(),
-            request.Title,
-            request.Description,
-            request.Poster!,
-            request.AgeRating,
-            0,
-            request.RentalStartDate,
-            new List<string>(),
-            new List<string>()
+    private static MovieDetailsDto CreateMovieDetailsDto()
+        => new MovieDetailsDto(
+            Id: Guid.NewGuid(),
+            Title: "Test movie",
+            Description: "Description",
+            Poster: "poster.jpg",
+            AgeRating: 16,
+            Rating: 7.5m,
+            RentalStartDate: DateTime.UtcNow,
+            Actors: new List<string>(),
+            Genres: new List<string>()
         );
 
-        _mapper
-            .Setup(m => m.Map<MovieDetailsDto>(movieEntity))
-            .Returns(detailsDto);
+
+    [Fact]
+    public async Task CreateMovieAsync_ShouldCreate_WhenMovieDoesNotExist()
+    {
+        var dto = CreateCreateDto();
+        var entity = CreateMovieEntity();
+        var detailsDto = CreateMovieDetailsDto();
+
+        _movieRepository
+            .Setup(r => r.GetMovieByNameAsync(dto.Title, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MovieEntity?)null);
+
+        _mapper.Setup(m => m.Map<MovieEntity>(dto)).Returns(entity);
+        _mapper.Setup(m => m.Map<MovieDetailsDto>(entity)).Returns(detailsDto);
 
         var service = CreateService();
 
-        var result = await service.CreateMovieAsync(request, CancellationToken.None);
+        var result = await service.CreateMovieAsync(dto, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Title.Should().Be(request.Title);
+        result.Value.Title.Should().Be(dto.Title);
 
-        _movieRepo.Verify(r => r.AddMovie(movieEntity), Times.Once);
-        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _movieRepository.Verify(r => r.AddMovie(entity), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateMovieAsync_ShouldFail_WhenMovieAlreadyExists()
+    {
+        var dto = CreateCreateDto();
+
+        _movieRepository
+            .Setup(r => r.GetMovieByNameAsync(dto.Title, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateMovieEntity());
+
+        var service = CreateService();
+
+        var result = await service.CreateMovieAsync(dto, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Errors.Should()
+            .Contain(e => e.Code == "Movie.Exist");
+
+    }
+
+
+    [Fact]
+    public async Task GetMovieByIdAsync_ShouldReturnMovie_WhenExists()
+    {
+        var id = Guid.NewGuid();
+        var entity = CreateMovieEntity();
+        var dto = CreateMovieDetailsDto();
+
+        _movieRepository
+            .Setup(r => r.GetMovieByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entity);
+
+        _mapper.Setup(m => m.Map<MovieDetailsDto>(entity)).Returns(dto);
+
+        var service = CreateService();
+
+        var result = await service.GetMovieByIdAsync(
+            new GetMovieByIdDto(id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Title.Should().Be(dto.Title);
+    }
+
+    [Fact]
+    public async Task GetMovieByIdAsync_ShouldFail_WhenNotFound()
+    {
+        var id = Guid.NewGuid();
+
+        _movieRepository
+            .Setup(r => r.GetMovieByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MovieEntity?)null);
+
+        var service = CreateService();
+
+        var result = await service.GetMovieByIdAsync(
+            new GetMovieByIdDto(id),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Errors.Should()
+            .Contain(e => e.Code == "MovieNotFound");
+
+    }
+
+
+    [Fact]
+    public async Task DeleteMovieAsync_ShouldDelete_WhenExists()
+    {
+        var id = Guid.NewGuid();
+        var entity = CreateMovieEntity();
+
+        _movieRepository
+            .Setup(r => r.GetMovieByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entity);
+
+        var service = CreateService();
+
+        var result = await service.DeleteMovieAsync(
+            new DeleteMovieDto(id),
+            CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        _movieRepository.Verify(r => r.DeleteMovie(entity), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteMovieAsync_ShouldFail_WhenNotFound()
+    {
+        var id = Guid.NewGuid();
+
+        _movieRepository
+            .Setup(r => r.GetMovieByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MovieEntity?)null);
+
+        var service = CreateService();
+
+        var result = await service.DeleteMovieAsync(
+            new DeleteMovieDto(id),
+            CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Errors.Should()
+            .Contain(e => e.Code == "MovieNotFound");
+
     }
 }

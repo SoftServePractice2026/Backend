@@ -93,9 +93,7 @@ public class IdentityServiceTests
 
         _userManager
             .Setup(u => u.GetRolesAsync(user))
-            .ReturnsAsync(new List<string> { Role.User });
-
-        _jwtProvider
+            .ReturnsAsync(new List<string> { Role.User }); _jwtProvider
             .Setup(j => j.GenerateToken(user.Id, It.IsAny<IEnumerable<string>>()))
             .Returns("jwt-token");
 
