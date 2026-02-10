@@ -63,6 +63,14 @@ namespace Infrastructure.Repositories
             if (hallFilter.HallSize.HasValue)
                 query = query.Where(h => h.HallSize == hallFilter.HallSize.Value);
 
+            if (hallFilter.Date.HasValue)
+            {
+                var targetDate = DateTime.SpecifyKind(hallFilter.Date.Value, DateTimeKind.Utc);
+                
+                query = query.Where(h => h.Sessions.Any(s => s.StartTime.Date == targetDate));
+                query = query.Include(h => h.Sessions.Where(s => s.StartTime.Date == targetDate));
+            }
+            
             //Sorting
             query = query.ApplyOrderBy(
                 hallFilter.OrderBy,
