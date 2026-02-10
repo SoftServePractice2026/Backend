@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Application.Auth;
-using Infrastructure.Identity.Data;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,7 +17,7 @@ public class JwtProvider : IJwtProvider
         _options = options.Value;
     }
 
-    public string GenerateToken(Guid userId, IEnumerable<string> roles)
+    public (string token, int expiry) GenerateToken(Guid userId, IEnumerable<string> roles)
     {
         var claims = new List<Claim>
         {
@@ -37,20 +36,20 @@ public class JwtProvider : IJwtProvider
             issuer: _options.Issuer,
             audience: _options.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(_options.ExpiresHours),
+            expires: DateTime.UtcNow.AddMinutes(_options.ExpiresAccessMinutes),
             signingCredentials: creds
         );
         
         var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
         
-        return tokenValue;
+        return (tokenValue, _options.ExpiresAccessMinutes);
     }
 
-    public string? GenerateRefreshToken()
+    public (string? token, int expiry) GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
-        return Convert.ToBase64String(randomNumber);
+        return (Convert.ToBase64String(randomNumber), _options.ExpiresRefreshMinutes);
     }
 }

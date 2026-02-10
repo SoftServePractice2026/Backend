@@ -45,13 +45,13 @@ public class IdentityService : IIdentityService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<Result<IdentityDetailsDto>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var userExist = await _userManager.FindByEmailAsync(request.Email);
 
         if (userExist is not null)
         {
-            return Result<AuthResponse>.Fail(Error.Conflict("user.already.exist", $"User with email: {request.Email} already exist"));
+            return Result<IdentityDetailsDto>.Fail(Error.Conflict("user.already.exist", $"User with email: {request.Email} already exist"));
         }
 
         var user = _mapper.Map<ApplicationUser>(request);
@@ -59,7 +59,7 @@ public class IdentityService : IIdentityService
         var userRole = Role.User;
         if (!await _roleManager.RoleExistsAsync(userRole))
         {
-            return Result<AuthResponse>.Fail(Error.Internal("user.role.not.found", "User role not found"));
+            return Result<IdentityDetailsDto>.Fail(Error.Internal("user.role.not.found", "User role not found"));
         }
 
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -67,14 +67,13 @@ public class IdentityService : IIdentityService
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => Error.Validation(e.Code, e.Description));
-            return Result<AuthResponse>.Fail(new Failure(errors));
+            return Result<IdentityDetailsDto>.Fail(new Failure(errors));
         }
 
         var roleEntity = await _roleManager.FindByNameAsync(userRole);
         var addRoleResult = await _userManager.AddToRoleAsync(user, roleEntity!.Name!);
 
         var userRoles = await _userManager.GetRolesAsync(user);
-        var token = _jwtProvider.GenerateToken(user.Id, userRoles);
 
         var detailsDto = new IdentityDetailsDto(
                 user.Id,
@@ -84,9 +83,7 @@ public class IdentityService : IIdentityService
                 user.BirthDate,
                 userRoles);
 
-        var response = new AuthResponse(token, DateTime.UtcNow.AddHours(3), detailsDto);
-
-        return Result<AuthResponse>.Success(response);
+        return Result<IdentityDetailsDto>.Success(detailsDto);
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
@@ -99,7 +96,13 @@ public class IdentityService : IIdentityService
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        var token = _jwtProvider.GenerateToken(user.Id, roles);
+        var accessToken = _jwtProvider.GenerateToken(user.Id, roles);
+        var refreshToken = _jwtProvider.GenerateRefreshToken();
+
+        user.RefreshToken = refreshToken.token;
+        var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(refreshToken.expiry);
+        user.RefreshTokenExpiryTime = refreshTokenExpiry;
+        await _userManager.UpdateAsync(user);
 
         var userDetails = new IdentityDetailsDto(
                 user.Id,
@@ -109,14 +112,31 @@ public class IdentityService : IIdentityService
                 user.BirthDate,
                 roles);
 
-        var response = new AuthResponse(token, DateTime.UtcNow.AddHours(3), userDetails);
+        var response = new AuthResponse(
+            accessToken.token,
+            DateTime.UtcNow.AddMinutes(accessToken.expiry),
+            userDetails,
+            refreshToken.token,
+            refreshTokenExpiry);
 
         return Result<AuthResponse>.Success(response);
     }
 
-    public async Task LogoutAsync()
+    public async Task LogoutAsync(string refreshTokenValue)
     {
-        await Task.CompletedTask;
+        if (!string.IsNullOrEmpty(refreshTokenValue))
+        {
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.RefreshToken == refreshTokenValue);
+
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow;
+
+                await _userManager.UpdateAsync(user);
+            }
+        }
     }
 
     public async Task<Result<AuthResponse>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
@@ -124,19 +144,24 @@ public class IdentityService : IIdentityService
         var user = await _userManager.Users
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken, cancellationToken);
 
-
-        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        if (user == null)
         {
             return Result<AuthResponse>.Fail(Error.Unauthorized("Invalid token", "Invalid token."));
 
+        }
+
+        if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
+            return Result<AuthResponse>.Fail(Error.Unauthorized("Invalid token", "Refresh token expired."));
         }
 
         var roles = await _userManager.GetRolesAsync(user);
         var newJwtToken = _jwtProvider.GenerateToken(user.Id, roles);
         var newRefreshToken = _jwtProvider.GenerateRefreshToken();
 
-        user.RefreshToken = newRefreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        user.RefreshToken = newRefreshToken.token;
+        var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(newRefreshToken.expiry);
+        user.RefreshTokenExpiryTime = refreshTokenExpiry;
 
         await _userManager.UpdateAsync(user);
 
@@ -147,7 +172,13 @@ public class IdentityService : IIdentityService
                 user.Email!,
                 user.BirthDate,
                 roles);
-        var response = new AuthResponse(newJwtToken, DateTime.UtcNow.AddHours(3), userDetails);
+
+        var response = new AuthResponse(
+            newJwtToken.token,
+            DateTime.UtcNow.AddMinutes(newJwtToken.expiry),
+            userDetails,
+            newRefreshToken.token,
+            refreshTokenExpiry);
 
         return Result<AuthResponse>.Success(response);
     }
