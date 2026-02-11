@@ -82,8 +82,9 @@ using (var scope = app.Services.CreateScope())
     {
         //Domain seed
         var seeder = serviceProvider.GetRequiredService<HallSeed>();
+        var seeder1 = serviceProvider.GetRequiredService<SessionSeed>();
         await seeder.SeedHallsAndSeatsAsync();
-
+        await seeder1.SeedAsync();
         //Identity seed
         await IdentitySeed.SeedRolesAsync(scope.ServiceProvider);
     }
