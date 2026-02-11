@@ -1,7 +1,5 @@
-﻿using Application.DTOs.Actor;
-using Application.DTOs.ContactMessage;
+﻿using Application.DTOs.Email;
 using Application.Services.Email;
-using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using WebAPI.ResponseExtensions;

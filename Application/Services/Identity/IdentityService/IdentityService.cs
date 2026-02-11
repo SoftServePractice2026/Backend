@@ -1,17 +1,23 @@
 using Application.Auth;
 using Application.Dtos;
 using Application.Dtos.Identity;
+using Application.DTOs.Email;
+using Application.DTOs.Identity.RecoveryPasswordDtos;
+using Application.Services.Email;
+using Application.Services.Movie.MovieRepository;
 using AutoMapper;
 using Domain.Constants;
+using Domain.Entities;
+using Domain.Interfaces;
 using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Shared;
 using System.Data;
 using System.Security.Claims;
-using Application.Services.Movie.MovieRepository;
-using Domain.Entities;
-using Domain.Interfaces;
+using System.Text;
+using System.Web;
 
 namespace Application.Services.Identity.IdentityService;
 
@@ -21,10 +27,13 @@ public class IdentityService : IIdentityService
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IJwtProvider _jwtProvider;
     private readonly IMapper _mapper;
-    
+
     private readonly IFavoriteMovieRepository _favoriteMovieRepository;
     private readonly IMovieRepository _movieRepository;
     private readonly IUnitOfWork _unitOfWork;
+
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
 
     public IdentityService(
         UserManager<ApplicationUser> userManager,
@@ -33,7 +42,9 @@ public class IdentityService : IIdentityService
         IMapper mapper,
         IFavoriteMovieRepository favoriteMovieRepository,
         IMovieRepository movieRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -43,6 +54,9 @@ public class IdentityService : IIdentityService
         _favoriteMovieRepository = favoriteMovieRepository;
         _movieRepository = movieRepository;
         _unitOfWork = unitOfWork;
+
+        _emailService = emailService;
+        _configuration = configuration;
     }
 
     public async Task<Result<IdentityDetailsDto>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
@@ -226,16 +240,16 @@ public class IdentityService : IIdentityService
         user.LastName = request.LastName;
         user.BirthDate = request.BirthDate;
         user.PhoneNumber = request.PhoneNumber;
-        
+
         var result = await _userManager.UpdateAsync(user);
-        
+
         if (!result.Succeeded)
         {
             return Result<IdentityDetailsDto>.Fail(Error.Validation(
-                "user.update.failed", 
+                "user.update.failed",
                 "User update failed"));
         }
-        
+
         var roles = await _userManager.GetRolesAsync(user);
 
         return Result<IdentityDetailsDto>.Success(
@@ -248,8 +262,8 @@ public class IdentityService : IIdentityService
                 roles
             ));
     }
-    
-    
+
+
     public async Task<Result<List<FavoriteMovieResponse>>> GetMyFavoriteMoviesAsync(
         Guid userId,
         CancellationToken cancellationToken)
@@ -316,7 +330,7 @@ public class IdentityService : IIdentityService
         _favoriteMovieRepository.Add(entity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        
+
         return Result<FavoriteMovieResponse>.Success(new FavoriteMovieResponse
         {
             FavoriteId = entity.Id,
@@ -326,7 +340,7 @@ public class IdentityService : IIdentityService
         });
     }
 
-    
+
     public async Task DeleteFavoriteMovieAsync(Guid userId, Guid movieId, CancellationToken cancellationToken)
     {
         var favorite = await _favoriteMovieRepository.GetByUserAndMovieAsync(userId, movieId, cancellationToken);
@@ -338,5 +352,62 @@ public class IdentityService : IIdentityService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<Result<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
 
+        if (user == null)
+            return Result<ForgotPasswordResponse>.Success(new ForgotPasswordResponse());
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var encodedToken = HttpUtility.UrlEncode(token);
+
+        var frontendUrl = _configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+        var resetLink = $"{frontendUrl![0]}/reset-password?email={request.Email}&token={encodedToken}";
+
+        var emailSendMessageRequest = new EmailSendMessageRequest(
+            "cinemadmin@gmail.com",
+            request.Email,
+            "Recovery password",
+            $"Click here to reset password: {resetLink}");
+
+        await _emailService.SendEmailAsync(emailSendMessageRequest, cancellationToken);
+
+        var result = new ForgotPasswordResponse() { TokenHash = encodedToken, ResetLink = resetLink };
+
+        return Result<ForgotPasswordResponse>.Success(result);
+    }
+
+    public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            return Result<string>.Fail(Error.NotFound("not.found.user", "Invalid request"));
+
+        string decodedToken;
+
+        try
+        {
+            decodedToken = HttpUtility.UrlDecode(request.Token);
+        }
+        catch
+        {
+            return Result<string>.Fail(Error.Conflict("invalid.token", "Invalid token format"));
+        }
+
+        var result = await _userManager.ResetPasswordAsync(
+            user,
+            decodedToken,
+            request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => Error.Internal(e.Code, e.Description));
+            return Result<string>.Fail(new Failure(errors));
+        }
+
+        return Result<string>.Success("Reset password completed");
+    }
 }

@@ -1,4 +1,5 @@
 using Application.Dtos.Identity;
+using Application.DTOs.Identity.RecoveryPasswordDtos;
 using Application.Services.Identity;
 using Domain.Constants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -167,5 +168,27 @@ public class IdentityControllers : BaseController
         var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         await _identityService.DeleteFavoriteMovieAsync(userId, movieId, cancellationToken);
         return NoContent();
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _identityService.ForgotPasswordAsync(request, cancellationToken);
+
+        if (!result.IsSuccess)
+            result.Failure!.ToResponse();
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _identityService.ResetPasswordAsync(request, cancellationToken);
+
+        if (!result.IsSuccess)
+            return result.Failure!.ToResponse();
+
+        return Ok(result.Value);
     }
 }
