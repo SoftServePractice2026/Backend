@@ -11,13 +11,13 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Shared;
 using System.Data;
 using System.Security.Claims;
 using System.Text;
-using System.Web;
 
 namespace Application.Services.Identity.IdentityService;
 
@@ -361,7 +361,7 @@ public class IdentityService : IIdentityService
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        var encodedToken = HttpUtility.UrlEncode(token);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
         var frontendUrl = _configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 
@@ -390,7 +390,8 @@ public class IdentityService : IIdentityService
 
         try
         {
-            decodedToken = HttpUtility.UrlDecode(request.Token);
+            var decodedBytes = WebEncoders.Base64UrlDecode(request.Token);
+            decodedToken = Encoding.UTF8.GetString(decodedBytes);
         }
         catch
         {
