@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -7,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitMigration : Migration
+    public partial class NewMigrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -112,6 +113,8 @@ namespace Infrastructure.Migrations
                     start_of_rental = table.Column<DateTime>(type: "date", nullable: false),
                     end_of_rental = table.Column<DateTime>(type: "date", nullable: false),
                     tmdb_id = table.Column<int>(type: "integer", nullable: true),
+                    year = table.Column<int>(type: "integer", nullable: true),
+                    formats = table.Column<List<string>>(type: "text[]", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp", nullable: false, defaultValueSql: "timezone('utc', now())"),
                     last_modified_at = table.Column<DateTime>(type: "timestamp", nullable: true)
                 },
