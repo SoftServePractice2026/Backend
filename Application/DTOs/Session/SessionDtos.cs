@@ -37,6 +37,7 @@ namespace Application.DTOs
         Guid? MovieId,
         Guid? HallId,
         SessionStatusEnum? Status,
+        DateTime? Date,
         DateTime? From,
         DateTime? To,
         string? MovieTitle,

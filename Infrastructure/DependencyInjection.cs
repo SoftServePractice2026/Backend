@@ -113,7 +113,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<HallSeed>();
-
+        services.AddScoped<SessionSeed>();
         return services;
     }
 }

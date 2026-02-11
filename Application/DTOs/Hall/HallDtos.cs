@@ -32,5 +32,6 @@ namespace Application.DTOs
         bool? IsActive,
         HallSizeEnum? HallSize,
         string? OrderBy,
+        DateTime? Date,
         SortDirection SortDirection = SortDirection.Ascending) : PaginationBaseDto, ISortable; 
 }
