@@ -70,7 +70,8 @@ public static class DependencyInjection
                     ValidAudience = jwtOptions.Audience,
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+                    ClockSkew = TimeSpan.Zero,
                 };
 
                 options.Events = new JwtBearerEvents()
@@ -108,10 +109,11 @@ public static class DependencyInjection
         services.AddScoped<ISeatRepository, SeatRepository>();
         services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IFavoriteMovieRepository, FavoriteMovieRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<HallSeed>();
-
+        services.AddScoped<SessionSeed>();
         return services;
     }
 }

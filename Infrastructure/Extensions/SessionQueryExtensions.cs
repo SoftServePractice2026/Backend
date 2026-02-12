@@ -21,9 +21,15 @@ public static class SessionQueryExtensions
 
         if (filter.From.HasValue)
             query = query.Where(s => s.StartTime >= filter.From.Value);
-
+        
         if (filter.To.HasValue)
             query = query.Where(s => s.StartTime <= filter.To.Value);
+
+        if (filter.Date.HasValue)
+        {
+            var targetDate = DateTime.SpecifyKind(filter.Date.Value.Date, DateTimeKind.Utc);
+            query = query.Where(s => s.StartTime.Date == targetDate);
+        }
 
         if (!string.IsNullOrWhiteSpace(filter.MovieTitle))
         {

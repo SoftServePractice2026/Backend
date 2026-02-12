@@ -8,6 +8,7 @@ namespace Domain.Filters
         public bool? IsActive { get; init; }
         public HallSizeEnum? HallSize { get; init; }
 
+        public DateTime? Date { get; init; }
         public int PageNumber { get; init; }
         public int PageSize { get; init; }
 

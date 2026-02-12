@@ -1,14 +1,23 @@
 using Application.Auth;
 using Application.Dtos;
 using Application.Dtos.Identity;
+using Application.DTOs.Email;
+using Application.DTOs.Identity.RecoveryPasswordDtos;
+using Application.Services.Email;
+using Application.Services.Movie.MovieRepository;
 using AutoMapper;
 using Domain.Constants;
+using Domain.Entities;
+using Domain.Interfaces;
 using Infrastructure.Identity.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Shared;
 using System.Data;
 using System.Security.Claims;
+using System.Text;
 
 namespace Application.Services.Identity.IdentityService;
 
@@ -19,21 +28,44 @@ public class IdentityService : IIdentityService
     private readonly IJwtProvider _jwtProvider;
     private readonly IMapper _mapper;
 
-    public IdentityService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IJwtProvider jwtProvider, IMapper mapper)
+    private readonly IFavoriteMovieRepository _favoriteMovieRepository;
+    private readonly IMovieRepository _movieRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
+
+    public IdentityService(
+        UserManager<ApplicationUser> userManager,
+        RoleManager<ApplicationRole> roleManager,
+        IJwtProvider jwtProvider,
+        IMapper mapper,
+        IFavoriteMovieRepository favoriteMovieRepository,
+        IMovieRepository movieRepository,
+        IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _jwtProvider = jwtProvider;
         _mapper = mapper;
+
+        _favoriteMovieRepository = favoriteMovieRepository;
+        _movieRepository = movieRepository;
+        _unitOfWork = unitOfWork;
+
+        _emailService = emailService;
+        _configuration = configuration;
     }
 
-    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<Result<IdentityDetailsDto>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var userExist = await _userManager.FindByEmailAsync(request.Email);
 
         if (userExist is not null)
         {
-            return Result<AuthResponse>.Fail(Error.Conflict("user.already.exist", $"User with email: {request.Email} already exist"));
+            return Result<IdentityDetailsDto>.Fail(Error.Conflict("user.already.exist", $"User with email: {request.Email} already exist"));
         }
 
         var user = _mapper.Map<ApplicationUser>(request);
@@ -41,7 +73,7 @@ public class IdentityService : IIdentityService
         var userRole = Role.User;
         if (!await _roleManager.RoleExistsAsync(userRole))
         {
-            return Result<AuthResponse>.Fail(Error.Internal("user.role.not.found", "User role not found"));
+            return Result<IdentityDetailsDto>.Fail(Error.Internal("user.role.not.found", "User role not found"));
         }
 
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -49,14 +81,13 @@ public class IdentityService : IIdentityService
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => Error.Validation(e.Code, e.Description));
-            return Result<AuthResponse>.Fail(new Failure(errors));
+            return Result<IdentityDetailsDto>.Fail(new Failure(errors));
         }
 
         var roleEntity = await _roleManager.FindByNameAsync(userRole);
         var addRoleResult = await _userManager.AddToRoleAsync(user, roleEntity!.Name!);
 
         var userRoles = await _userManager.GetRolesAsync(user);
-        var token = _jwtProvider.GenerateToken(user.Id, userRoles);
 
         var detailsDto = new IdentityDetailsDto(
                 user.Id,
@@ -66,9 +97,7 @@ public class IdentityService : IIdentityService
                 user.BirthDate,
                 userRoles);
 
-        var response = new AuthResponse(token, DateTime.UtcNow.AddHours(3), detailsDto);
-
-        return Result<AuthResponse>.Success(response);
+        return Result<IdentityDetailsDto>.Success(detailsDto);
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
@@ -81,7 +110,13 @@ public class IdentityService : IIdentityService
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        var token = _jwtProvider.GenerateToken(user.Id, roles);
+        var accessToken = _jwtProvider.GenerateToken(user.Id, roles);
+        var refreshToken = _jwtProvider.GenerateRefreshToken();
+
+        user.RefreshToken = refreshToken.token;
+        var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(refreshToken.expiry);
+        user.RefreshTokenExpiryTime = refreshTokenExpiry;
+        await _userManager.UpdateAsync(user);
 
         var userDetails = new IdentityDetailsDto(
                 user.Id,
@@ -91,14 +126,31 @@ public class IdentityService : IIdentityService
                 user.BirthDate,
                 roles);
 
-        var response = new AuthResponse(token, DateTime.UtcNow.AddHours(3), userDetails);
+        var response = new AuthResponse(
+            accessToken.token,
+            DateTime.UtcNow.AddMinutes(accessToken.expiry),
+            userDetails,
+            refreshToken.token,
+            refreshTokenExpiry);
 
         return Result<AuthResponse>.Success(response);
     }
 
-    public async Task LogoutAsync()
+    public async Task LogoutAsync(string refreshTokenValue)
     {
-        await Task.CompletedTask;
+        if (!string.IsNullOrEmpty(refreshTokenValue))
+        {
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.RefreshToken == refreshTokenValue);
+
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow;
+
+                await _userManager.UpdateAsync(user);
+            }
+        }
     }
 
     public async Task<Result<AuthResponse>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
@@ -106,19 +158,24 @@ public class IdentityService : IIdentityService
         var user = await _userManager.Users
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken, cancellationToken);
 
-
-        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        if (user == null)
         {
             return Result<AuthResponse>.Fail(Error.Unauthorized("Invalid token", "Invalid token."));
 
+        }
+
+        if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
+            return Result<AuthResponse>.Fail(Error.Unauthorized("Invalid token", "Refresh token expired."));
         }
 
         var roles = await _userManager.GetRolesAsync(user);
         var newJwtToken = _jwtProvider.GenerateToken(user.Id, roles);
         var newRefreshToken = _jwtProvider.GenerateRefreshToken();
 
-        user.RefreshToken = newRefreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        user.RefreshToken = newRefreshToken.token;
+        var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(newRefreshToken.expiry);
+        user.RefreshTokenExpiryTime = refreshTokenExpiry;
 
         await _userManager.UpdateAsync(user);
 
@@ -129,7 +186,13 @@ public class IdentityService : IIdentityService
                 user.Email!,
                 user.BirthDate,
                 roles);
-        var response = new AuthResponse(newJwtToken, DateTime.UtcNow.AddHours(3), userDetails);
+
+        var response = new AuthResponse(
+            newJwtToken.token,
+            DateTime.UtcNow.AddMinutes(newJwtToken.expiry),
+            userDetails,
+            newRefreshToken.token,
+            refreshTokenExpiry);
 
         return Result<AuthResponse>.Success(response);
     }
@@ -162,5 +225,190 @@ public class IdentityService : IIdentityService
                 roles
             )
         );
+    }
+
+    public async Task<Result<IdentityDetailsDto>> UpdateUserAsync(Guid userId, UpdateUserDto request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user == null)
+        {
+            return Result<IdentityDetailsDto>.Fail(Error.NotFound("user.not.found", $"User with id: {userId} not found"));
+        }
+
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.BirthDate = request.BirthDate;
+        user.PhoneNumber = request.PhoneNumber;
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return Result<IdentityDetailsDto>.Fail(Error.Validation(
+                "user.update.failed",
+                "User update failed"));
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Result<IdentityDetailsDto>.Success(
+            new IdentityDetailsDto(
+                user.Id,
+                user.FirstName,
+                user.LastName,
+                user.Email!,
+                user.BirthDate,
+                roles
+            ));
+    }
+
+
+    public async Task<Result<List<FavoriteMovieResponse>>> GetMyFavoriteMoviesAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result<List<FavoriteMovieResponse>>.Fail(
+                Error.NotFound("user.not.found", $"User with id: {userId} not found")
+            );
+        }
+
+        var movieIds = await _favoriteMovieRepository.GetMovieIdsByUserAsync(userId, cancellationToken);
+
+        var response = movieIds.Select(movieId => new FavoriteMovieResponse
+        {
+            FavoriteId = Guid.Empty,
+            MovieId = movieId,
+            UserId = userId,
+            AddedAt = default
+        }).ToList();
+
+        return Result<List<FavoriteMovieResponse>>.Success(response);
+    }
+
+    public async Task<Result<FavoriteMovieResponse>> AddFavoriteMovieAsync(
+        Guid userId,
+        AddFavoriteMovieRequest request,
+        CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result<FavoriteMovieResponse>.Fail(
+                Error.NotFound("user.not.found", $"User with id: {userId} not found")
+            );
+        }
+
+        var movie = await _movieRepository.GetMovieByIdAsync(request.MovieId, cancellationToken);
+
+        if (movie is null)
+        {
+            return Result<FavoriteMovieResponse>.Fail(
+                Error.NotFound("movie.not.found", $"Movie with id: {request.MovieId} not found")
+            );
+        }
+
+        var alreadyExists = await _favoriteMovieRepository.ExistsAsync(userId, request.MovieId, cancellationToken);
+        if (alreadyExists)
+        {
+            return Result<FavoriteMovieResponse>.Fail(
+                Error.Conflict("favorite.already.exists", "Movie is already in favorites")
+            );
+        }
+
+        var entity = new FavoriteMovieEntity
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            MovieId = request.MovieId,
+            AddedAt = DateTime.Now
+        };
+
+        _favoriteMovieRepository.Add(entity);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+
+        return Result<FavoriteMovieResponse>.Success(new FavoriteMovieResponse
+        {
+            FavoriteId = entity.Id,
+            MovieId = entity.MovieId,
+            UserId = entity.UserId,
+            AddedAt = entity.AddedAt
+        });
+    }
+
+
+    public async Task DeleteFavoriteMovieAsync(Guid userId, Guid movieId, CancellationToken cancellationToken)
+    {
+        var favorite = await _favoriteMovieRepository.GetByUserAndMovieAsync(userId, movieId, cancellationToken);
+        if (favorite is null)
+        {
+            return;
+        }
+        _favoriteMovieRepository.Remove(favorite);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Result<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user == null)
+            return Result<ForgotPasswordResponse>.Success(new ForgotPasswordResponse());
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        var frontendUrl = _configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+        var resetLink = $"{frontendUrl![0]}/reset-password?email={request.Email}&token={encodedToken}";
+
+        var emailSendMessageRequest = new EmailSendMessageRequest(
+            "cinemadmin@gmail.com",
+            request.Email,
+            "Recovery password",
+            $"Click here to reset password: {resetLink}");
+
+        await _emailService.SendEmailAsync(emailSendMessageRequest, cancellationToken);
+
+        var result = new ForgotPasswordResponse() { TokenHash = encodedToken, ResetLink = resetLink };
+
+        return Result<ForgotPasswordResponse>.Success(result);
+    }
+
+    public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            return Result<string>.Fail(Error.NotFound("not.found.user", "Invalid request"));
+
+        string decodedToken;
+
+        try
+        {
+            var decodedBytes = WebEncoders.Base64UrlDecode(request.Token);
+            decodedToken = Encoding.UTF8.GetString(decodedBytes);
+        }
+        catch
+        {
+            return Result<string>.Fail(Error.Conflict("invalid.token", "Invalid token format"));
+        }
+
+        var result = await _userManager.ResetPasswordAsync(
+            user,
+            decodedToken,
+            request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => Error.Internal(e.Code, e.Description));
+            return Result<string>.Fail(new Failure(errors));
+        }
+
+        return Result<string>.Success("Reset password completed");
     }
 }
