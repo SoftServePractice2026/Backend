@@ -5,7 +5,7 @@
   <Project Path="Application/Application.csproj" />
   <Project Path="Domain/Domain.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
-  <Project Path="Shared/Shared.csproj" Id="1079e763-69e4-46fb-9f1b-a9d48ee9715f" />
-  <Project Path="SoftServePractice2026.Backend.Tests /SoftServePractice2026.Backend.Tests.csproj" />
+  <Project Path="Shared/Shared.csproj"/>
+  <Project Path="SoftServePractice2026.Backend.Tests/SoftServePractice2026.Backend.Tests.csproj" />
   <Project Path="WebAPI/WebAPI.csproj" />
 </Solution>
