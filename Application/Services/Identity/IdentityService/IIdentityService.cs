@@ -1,5 +1,6 @@
 using Application.Dtos;
 using Application.Dtos.Identity;
+using Application.DTOs.Identity.RecoveryPasswordDtos;
 using Shared;
 using System.Security.Claims;
 
@@ -25,4 +26,7 @@ public interface IIdentityService
         CancellationToken cancellationToken);
             
     Task DeleteFavoriteMovieAsync(Guid userId, Guid movieId, CancellationToken cancellationToken);
+
+    Task<Result<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken);
+    Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellation);
 }

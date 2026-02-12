@@ -1,9 +1,5 @@
-﻿using Application.DTOs.ContactMessage;
-using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using FluentValidation.Validators;
+﻿using FluentValidation;
+using Application.DTOs.Email;
 
 namespace Application.Validators.Emails
 {
