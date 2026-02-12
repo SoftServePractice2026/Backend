@@ -48,7 +48,7 @@ namespace SoftServePractice2026.Backend.Tests.Services
             var result = await service.CreateActorAsync(dto, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.FirstName.Should().Be("Tom");
+            result.Value!.FirstName.Should().Be("Tom");
 
             _repo.Verify(r => r.CreateActor(entity), Times.Once);
             _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -79,7 +79,7 @@ namespace SoftServePractice2026.Backend.Tests.Services
             var result = await service.GetActorByIdAsync(id, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.LastName.Should().Be("Hardy");
+            result.Value!.LastName.Should().Be("Hardy");
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace SoftServePractice2026.Backend.Tests.Services
             var result = await service.GetActorByIdAsync(Guid.NewGuid(), CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Failure.Errors.Should().Contain(e => e.Code == "actor.not.found");
+            result.Failure!.Errors.Should().Contain(e => e.Code == "actor.not.found");
         }
 
 
@@ -123,7 +123,7 @@ namespace SoftServePractice2026.Backend.Tests.Services
             var result = await service.UpdateActorAsync(id, dto, CancellationToken.None);
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.FirstName.Should().Be("Leonardo");
+            result.Value!.FirstName.Should().Be("Leonardo");
 
             _repo.Verify(r => r.UpdateActor(entity), Times.Once);
             _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -143,7 +143,7 @@ namespace SoftServePractice2026.Backend.Tests.Services
                 CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Failure.Errors.Should().Contain(e => e.Code == "actor.not.found");
+            result.Failure!.Errors.Should().Contain(e => e.Code == "actor.not.found");
         }
 
 
@@ -176,7 +176,7 @@ namespace SoftServePractice2026.Backend.Tests.Services
             var result = await service.DeleteActorAsync(Guid.NewGuid(), CancellationToken.None);
 
             result.IsSuccess.Should().BeFalse();
-            result.Failure.Errors.Should().Contain(e => e.Code == "actor.not.found");
+            result.Failure!.Errors.Should().Contain(e => e.Code == "actor.not.found");
         }
 
 

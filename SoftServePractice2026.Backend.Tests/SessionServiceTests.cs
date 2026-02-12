@@ -138,7 +138,8 @@ public class SessionServiceTests
     public async Task GetFilteredSessionsAsync_ShouldReturnSessions()
     {
         var filterDto = new SessionFilterDto(
-            null, null, null,
+            null, null,
+            null, null,
             null, null,
             null, null
         );

@@ -30,6 +30,8 @@ public class MovieServiceTests
             Language: "en",
             AgeRating: 16,
             Duration: 120,
+            Year: 2000,
+            Formats: new List<string>(),
             RentalStartDate: DateTime.UtcNow,
             RentalEndDate: DateTime.UtcNow.AddDays(7),
             GenreIds: new List<Guid>()
@@ -55,6 +57,9 @@ public class MovieServiceTests
             Poster: "poster.jpg",
             AgeRating: 16,
             Rating: 7.5m,
+            Duration: 120,
+            Year: 2000,
+            Formats: new List<string>(),
             RentalStartDate: DateTime.UtcNow,
             Actors: new List<string>(),
             Genres: new List<string>()
