@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Application.Auth;
+using Application.Interfaces;
 using Application.Services.Movie.MovieRepository;
 using Infrastructure.Authentication;
 using Infrastructure.Identity.Data;
@@ -111,6 +112,8 @@ public static class DependencyInjection
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IFavoriteMovieRepository, FavoriteMovieRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+
 
         services.AddScoped<HallSeed>();
         services.AddScoped<SessionSeed>();

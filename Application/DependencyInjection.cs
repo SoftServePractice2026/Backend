@@ -1,5 +1,6 @@
 ﻿using Application.Services;
 using Application.Services.Actor;
+using Application.Services.Booking;
 using Application.Services.Genre;
 using Application.Services.Hall;
 using Application.Services.Identity;
@@ -42,6 +43,8 @@ public static class DependencyInjection
         services.AddScoped<IMovieImportService, MovieImportService>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IBookingService, BookingService>();
+
         return services;
     }
 }
